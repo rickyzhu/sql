@@ -2,6 +2,10 @@
 #
 # Copyright (c) 1998, 2002, Oracle Corporation.  All rights reserved.
 #
+# dd/mm/yyyy	who	what
+#========================================
+# 24/08/2016	orz	v0.9
+#
 
 version()
 {
@@ -129,6 +133,11 @@ usage()
       - temp:                       view used space in temp tbs 
       - asm:                        Show asm space/free space
       - space [<tbs>]:              view used/free space in a given tbs 
+      - redo :                      view redo log files and redo groups
+      - active :                    view current active sessions, SQLs and execute time
+      - user :                      view users and user profiles
+      - sess $SESS_ID $INST_ID: view detailed information of specified session
+      - long [<seconds>]    :       view long running sessions than seconds, default 60 seconds
       - binds   $SQLID:         display bind capture information for specified cursor
       - fulltext $SQLID:        display the entire SQL text of the specified statement
       - last_sql_hash [<sid>]:      hash value of the last styatement executed by the specified sid. If no sid speficied,
@@ -473,6 +482,11 @@ if [ "$1" = "fulltext" -o "$1" = "full_text" ]; then
   setup_hash_value hash_value sql_id $2 $3
   shift $SHIFT_PARAM
 
+  INST_ID=1
+  if [ "$4" != "" ]; then
+    INST_ID="${4}"
+  fi
+
   if [ "$ORA_USE_HASH" = "" ]; then
     COLNM=sql_id
     COLNM_HEADER=sql_id
@@ -501,8 +515,8 @@ if [ "$1" = "fulltext" -o "$1" = "full_text" ]; then
     select $COLNM||
            decode(child_number, 0, '', '/'||child_number) $COLNM_HEADER, 
            sql_fulltext 
-    from v\$sql
-    where child_number=$CNUM 
+    from gv\$sql
+    where child_number=$CNUM  and inst_id=$INST_ID
           and $COLNAME=$HVAL;
 !
 
@@ -597,12 +611,13 @@ if [ "$1" = "execute" ] || [ "$1" = "executing" ]; then
     connect $DBUSER
 
     set pagesize 6000
-    set linesize 100
+    set linesize 102
     set tab off
     col address format A15
     col sql_hash format A15
     col sql_id format A18
     col exec format 9999
+    col INST for 9
     col sql_text format A75 WORD_WRAP
 
     select /*+ BDAGEVIL leading(se) */ 
@@ -1442,7 +1457,7 @@ if [ "$1" = "pgaadv" ]; then
 !
 
   if [ "$OUTPUT_ADVICE_HIST_CNT" = "$ORA_TMP/pga_target_advice_histogram_cnt.graph" ]; then
-    mxgraph $OUTPUT_ADVICE_HIST_PERC &
+    exgraph $OUTPUT_ADVICE_HIST_PERC &
     mxgraph $OUTPUT_ADVICE_HIST_CNT &
     mxgraph $OUTPUT_ADVICE &
     echo
@@ -1833,9 +1848,9 @@ if [ "$1" = "sessions" ]; then
     col sql_hash format A15
     col sql_id format A18
 
-    select s.sid, s.serial#, s.PROCESS cl_pid, p.spid pid, s.username, 
+    select s.inst_id, s.sid, s.serial#, s.PROCESS cl_pid, p.spid pid, s.username, 
            s.type, s.server, s.PROGRAM, $COLNM $COLNM_HEADER
-    from v\$session s, v\$process p
+    from gv\$session s, gv\$process p
     where s.PADDR = p.addr ;
 !
 exit 0
@@ -2000,12 +2015,12 @@ if [ "$1" = "space" ]; then
     col status format A15
     col name format A20
 
-     select ts.TABLESPACE_NAME, total_space_mb,
+     select ts.TABLESPACE_NAME, total_space_mb,max_space_mb,
             nvl(free_space_mb, 0) free_space_mb, 
             nvl(round(free_space_mb*100/total_space_mb),0) "FREE_SPACE_%" 
      from (select TABLESPACE_NAME, round(sum(BYTES)/1024/1024) free_space_mb 
            from dba_free_space group by TABLESPACE_NAME) fs, 
-        (select TABLESPACE_NAME, round(sum(BYTES)/1024/1024) total_space_mb 
+        (select TABLESPACE_NAME, round(sum(BYTES)/1024/1024) total_space_mb ,round(sum(MAXBYTES)/1024/1024) max_space_mb
          from dba_data_files group by TABLESPACE_NAME) ts 
      where fs.TABLESPACE_NAME(+)=ts.TABLESPACE_NAME ${EXTRA_PRED}
      order by 2;
@@ -2013,6 +2028,357 @@ if [ "$1" = "space" ]; then
 !
 exit 0
 fi
+##add by ricky
+if [ "$1" = "long" ]; then
+
+  if [ "$2" != "" ]; then
+    SECOND="$2"
+  else
+    SECOND=60
+  fi
+  sqlplus -s  /NOLOG  << ! | egrep -v "no rows selected|Session altered|Connected|rows selected"
+
+  connect $DBUSER
+  
+col sql_id for a20
+col sess for a20
+col event for a30
+col machine for a40
+col username for a10
+set linesize 300
+
+select sid||','||serial#||','||'@'||inst_id sess ,
+username,
+--event,
+--PREV_SQL_ID,
+sql_id,
+machine,
+--module,
+--to_char(FINAL_BLOCKING_INSTANCE) AS FBI,
+--to_char(FINAL_BLOCKING_SESSION) AS FBS,
+last_call_et seconds
+from gv\$session
+where status = 'ACTIVE'
+and type = 'USER'
+and username is not null
+and username <>'SYS'
+and last_call_et>${SECOND}
+order by last_call_et;
+!
+exit 0
+fi
+
+if [ "$1" = "user" ]; then
+
+  sqlplus -s  /NOLOG  << ! | egrep -v "no rows selected|Session altered|Connected|rows selected"
+
+  connect $DBUSER
+
+    set pagesize 10000
+    set linesize 300
+    col group# for 999
+    col thread# for 9
+    col sequence# for 999999
+    col blocksize for 999
+    col members for 9
+    col status for a10
+    col member for a100
+
+    select username,profile,default_tablespace,account_status from dba_users order by 1;
+
+!
+exit 0
+fi
+
+if [ "$1" = "active" ]; then
+
+  sqlplus -s  /NOLOG  << ! | egrep -v "no rows selected|Session altered|Connected|rows selected"
+
+  connect $DBUSER
+
+set linesize 350
+col Client for a10
+col Identifier for a10
+col Machine for a8
+col Command for a10
+col Action for a10
+col Module for a30
+col UserName for a10
+
+                                                  with vs as (select rownum rnum,
+                                                                              sid,
+                                                                              inst_id,
+                                                                              serial#,
+                                                                              status,
+                                                                              username,
+                                                                              last_call_et,
+                                                                              command,
+                                                                              machine,
+                                                                              osuser,
+                                                                              module,
+                                                                              action,
+                                                                              resource_consumer_group,
+                                                                              client_info,
+                                                                              client_identifier,
+                                                                              type,
+                                                                              terminal,
+                                                                              sql_id
+                                                                         from gv\$session) 
+                                                             select vs.inst_id, vs.sid ,serial# serial, vs.sql_id,
+                                                                    vs.username "Username",
+                                                                    case when vs.status = 'ACTIVE' 
+                                                                              then last_call_et 
+                                                                         else null end "Seconds in Wait",
+                                                                    decode(vs.command,  
+                                                                     0,null, 
+                                                                     1,'CRE TAB', 
+                                                                     2,'INSERT', 
+                                                                     3,'SELECT', 
+                                                                     4,'CRE CLUSTER', 
+                                                                     5,'ALT CLUSTER', 
+                                                                     6,'UPDATE', 
+                                                                     7,'DELETE', 
+                                                                     8,'DRP CLUSTER', 
+                                                                     9,'CRE INDEX', 
+                                                                     10,'DROP INDEX', 
+                                                                     11,'ALT INDEX', 
+                                                                     12,'DROP TABLE', 
+                                                                     13,'CRE SEQ', 
+                                                                     14,'ALT SEQ', 
+                                                                     15,'ALT TABLE', 
+                                                                     16,'DROP SEQ', 
+                                                                     17,'GRANT', 
+                                                                     18,'REVOKE', 
+                                                                     19,'CRE SYN', 
+                                                                     20,'DROP SYN', 
+                                                                     21,'CRE VIEW', 
+                                                                     22,'DROP VIEW', 
+                                                                     23,'VAL INDEX', 
+                                                                     24,'CRE PROC', 
+                                                                     25,'ALT PROC', 
+                                                                     26,'LOCK TABLE', 
+                                                                     28,'RENAME', 
+                                                                     29,'COMMENT', 
+                                                                     30,'AUDIT', 
+                                                                     31,'NOAUDIT', 
+                                                                     32,'CRE DBLINK', 
+                                                                     33,'DROP DBLINK', 
+                                                                     34,'CRE DB', 
+                                                                     35,'ALTER DB', 
+                                                                     36,'CRE RBS', 
+                                                                     37,'ALT RBS', 
+                                                                     38,'DROP RBS', 
+                                                                     39,'CRE TBLSPC', 
+                                                                     40,'ALT TBLSPC', 
+                                                                     41,'DROP TBLSPC', 
+                                                                     42,'ALT SESSION', 
+                                                                     43,'ALT USER', 
+                                                                     44,'COMMIT', 
+                                                                     45,'ROLLBACK', 
+                                                                     46,'SAVEPOINT', 
+                                                                     47,'PL/SQL EXEC', 
+                                                                     48,'SET XACTN', 
+                                                                     49,'SWITCH LOG', 
+                                                                     50,'EXPLAIN', 
+                                                                     51,'CRE USER', 
+                                                                     52,'CRE ROLE', 
+                                                                     53,'DROP USER', 
+                                                                     54,'DROP ROLE', 
+                                                                     55,'SET ROLE', 
+                                                                     56,'CRE SCHEMA', 
+                                                                     57,'CRE CTLFILE', 
+                                                                     58,'ALTER TRACING', 
+                                                                     59,'CRE TRIGGER', 
+                                                                     60,'ALT TRIGGER', 
+                                                                     61,'DRP TRIGGER', 
+                                                                     62,'ANALYZE TAB', 
+                                                                     63,'ANALYZE IX', 
+                                                                     64,'ANALYZE CLUS', 
+                                                                     65,'CRE PROFILE', 
+                                                                     66,'DRP PROFILE', 
+                                                                     67,'ALT PROFILE', 
+                                                                     68,'DRP PROC', 
+                                                                     69,'DRP PROC', 
+                                                                     70,'ALT RESOURCE', 
+                                                                     71,'CRE SNPLOG', 
+                                                                     72,'ALT SNPLOG', 
+                                                                     73,'DROP SNPLOG', 
+                                                                     74,'CREATE SNAP', 
+                                                                     75,'ALT SNAP', 
+                                                                     76,'DROP SNAP', 
+                                                                     79,'ALTER ROLE', 
+                                                                     79,'ALTER ROLE', 
+                                                                     85,'TRUNC TAB', 
+                                                                     86,'TRUNC CLUST', 
+                                                                     88,'ALT VIEW', 
+                                                                     91,'CRE FUNC', 
+                                                                     92,'ALT FUNC', 
+                                                                     93,'DROP FUNC', 
+                                                                     94,'CRE PKG', 
+                                                                     95,'ALT PKG', 
+                                                                     96,'DROP PKG', 
+                                                                     97,'CRE PKG BODY', 
+                                                                     98,'ALT PKG BODY', 
+                                                                     99,'DRP PKG BODY', 
+                                                                     to_char(vs.command)) "Command",
+                                                                    substr(vs.machine,1,8) "Machine",
+                                                                 --   vs.osuser "OS User", 
+                                                                 --   lower(vs.status) "Status",
+                                                                    vs.module "Module"
+                                                                 --   vs.action "Action"
+                                                                 --   vs.resource_consumer_group,
+                                                                 --   vs.client_info "Client",
+                                                                 --   vs.client_identifier "Identifier"
+                                                               from vs 
+                                                              where vs.USERNAME is not null
+                                                                and nvl(vs.osuser,'x') <> 'SYSTEM'
+                                                                and vs.type <> 'BACKGROUND'
+								and vs.status<>'INACTIVE'
+								and vs.module<>'Streams'
+								and vs.username<>'SYS'
+                                                                order by 6
+/
+ 
+!
+exit 0
+fi
+
+if [ "$1" = "redo" ]; then
+
+  sqlplus -s  /NOLOG  << ! | egrep -v "no rows selected|Session altered|Connected|rows selected"
+
+  connect $DBUSER
+  
+    set pagesize 10000
+    set linesize 300
+    col group# for 999
+    col thread# for 9
+    col sequence# for 999999
+    col blocksize for 999
+    col members for 9
+    col status for a10
+    col member for a100
+
+    select * from v\$log order by thread#,group#,sequence#;
+
+    select * from v\$logfile order by group#;
+!
+exit 0
+fi
+
+if [ "$1" = "blocker" ]; then
+
+  sqlplus -s  /NOLOG  << ! | egrep -v "no rows selected|Session altered|Connected|rows selected"
+
+  connect $DBUSER
+
+set linesize 300
+set pages
+col sess for a20
+ 
+SELECT inst_id, DECODE(request,0,'##Holder: ','Waiter: ')||sid sess,
+id1, id2, lmode, request, type
+from gv\$lock
+WHERE (id1, id2, type) IN
+(SELECT id1, id2, type FROM gV\$LOCK WHERE request>0)
+order by inst_id, id1, request
+/
+
+
+!
+exit 0
+fi
+
+if [ "$1" = "sess" ]; then
+
+  if [ "$2" != "" ]; then
+    SESS_ID="${2}"
+  fi
+  INST_ID=1
+  if [ "$3" != "" ]; then
+    INST_ID="${3}"
+  fi
+  sqlplus -s  /NOLOG  << ! 2>/dev/null
+  connect $DBUSER
+
+set serveroutput on size 1000000
+set echo off feed off veri off
+set lines 300
+ 
+ 
+DECLARE
+  v_psid number;
+  v_sid number;
+  s gv\$session%ROWTYPE;
+  p gv\$process%ROWTYPE;
+BEGIN
+  begin
+  for c in (
+    select s.sid ,s.inst_id
+    from   gv\$process p, gv\$session s
+    where  p.addr     = s.paddr
+      and s.sid in ( '$SESS_ID')
+      and s.inst_id=p.inst_id
+      and s.inst_id = $INST_ID
+      order by s.last_call_et desc) loop
+       
+      select * into s from gv\$session where sid  = c.sid and inst_id=c.inst_id;
+      select * into p from gv\$process where addr = s.paddr and inst_id=s.inst_id;
+     
+      dbms_output.put_line('====================================================================================================');
+      dbms_output.put_line('Instance id : '|| s.inst_id);
+      dbms_output.put_line('SID/Serial  : '|| s.sid||','||s.serial#||',@'||s.inst_id);
+      dbms_output.put_line('SQL ID      : '|| s.sql_id);
+      dbms_output.put_line('Foreground  : '|| 'PID: '||s.process||' - '||s.program);
+      dbms_output.put_line('Shadow      : '|| 'PID: '||p.spid||' - '||p.program);
+      dbms_output.put_line('Terminal    : '|| s.terminal || '/ ' || p.terminal);
+      dbms_output.put_line('OS User     : '|| s.osuser||' on '||s.machine);
+      dbms_output.put_line('Ora User    : '|| s.username);
+      dbms_output.put_line('Status Flags: '|| s.status||' '||s.server||' '||s.type);
+      dbms_output.put_line('Hash Value  : '|| s.sql_hash_value);
+      dbms_output.put_line('Login Time  : '|| to_char(s.logon_time, 'YYYY-MM-DD Dy HH24:MI:SS'));
+      dbms_output.put_line('Last Call   : '|| to_char(sysdate-(s.last_call_et/60/60/24), 'YYYY-MM-DD Dy HH24:MI:SS') || ' - ' || to_char(s.last_call_et/60, '99,990.0') || ' min');
+     
+      dbms_output.put_line('Current SQL statement:');
+      for c1 in ( select * from gv\$sqltext
+                  where HASH_VALUE = s.sql_hash_value and inst_id=s.inst_id order by piece) loop
+        dbms_output.put_line(chr(9)||c1.sql_text);
+      end loop;
+     
+      dbms_output.put_line('Previous SQL statement:');
+      for c1 in ( select * from gv\$sqltext
+                  where HASH_VALUE = s.prev_hash_value and inst_id=s.inst_id order by piece) loop
+        dbms_output.put_line(chr(9)||c1.sql_text);
+      end loop;
+     
+      dbms_output.put_line('Session Waits:');
+        dbms_output.put_line(chr(9)||lpad('EVENT',30,' ')||'   '||lpad('P2TEXT',12,' ')||'   '||lpad('P2',12,' ')||'   '||lpad('seconds_in_wait',12,' ')) ;
+        dbms_output.put_line(chr(9)||lpad('-----------------------------',30,' ')||'   '||lpad('------------',12,' ')||'   '||lpad('------------',12,' ')||'   '||lpad('------------',12,' ')) ;        
+      for c1 in ( select event, p2text, p2, seconds_in_wait from gv\$session_wait where sid = s.sid and inst_id=s.inst_id) loop
+        dbms_output.put_line(chr(9)||lpad(c1.event,30,' ')||'   '||lpad(c1.p2text,12,' ')||'   '||lpad(c1.p2,12,' ')||'   '||lpad(c1.seconds_in_wait,12,' ')) ;
+      end loop;
+     
+      dbms_output.put_line('====================================================================================================');
+      dbms_output.put_line('alter system kill session '||''''|| s.sid||','||s.serial#||',@'||s.inst_id||''''||';');
+       
+  end loop;        
+  exception
+    when no_data_found then
+      dbms_output.put_line('NO ACTIVE SESSION!!!');
+      return;
+    when others then
+      dbms_output.put_line(sqlerrm);
+      return;
+  end;
+ 
+END;
+/
+
+!
+exit 0
+fi
+
+#ricky add finished
 
 if [ "$1" = "params" ]; then
 
@@ -2313,16 +2679,17 @@ if [ "$1" = "longops" ]; then
 
     connect $DBUSER
 
-    set linesize 120
-    column opname format a30 wrap
+    set linesize 125
+    column opname format a20 wrap
+    column sid for 9999
     
-    select $COLNM $COLNM_HEADER, opname, sofar, totalwork,
+    select inst_id,sid, $COLNM $COLNM_HEADER, opname, sofar, totalwork,
            round(sofar*100/totalwork) percent, 
            round(elapsed_seconds/60) "Elapsed (min)", 
            decode(sofar,0,0,round(elapsed_seconds*(totalwork-sofar)/
                   (sofar*60))) "To go (min)",
        context dfo
-  from v\$session_longops  
+  from gv\$session_longops  
   where sofar != totalwork; 
 !
 exit 0
@@ -3749,9 +4116,7 @@ if [ "$1" = "ash_wait" ]; then
                 where   sample_time between to_date( :begin_date, '$FMT' ) and
                         to_date( :end_date, '$FMT' ) and
                         session_state = 'WAITING'
-                group by trunc( (cast(ash.sample_time as date) -
-                         to_date('00:00:00 01/01/1970', 'HH24:MI:SS MM/DD/YYYY')) * 86400 /
-                                  (v.slot_time) ) ,
+                group by slot_time ,
                 event#))
         where event# =  cevent;
     
@@ -3977,6 +4342,7 @@ if [ "$1" = "optstats" ]; then
     from dba_tab_cols c, dba_tables t
     where t.table_name=c.table_name
     and t.num_rows > 0
+    and t.owner=c.owner
     and t.owner=upper('$2')
     and c.table_name in (select distinct table_name from dba_tables
         where owner=upper('$2') ${EXTRA_PRED} )
@@ -4921,15 +5287,16 @@ if [ "$1" = "monitor_list" ]; then
 
   set echo on
   set linesize 180
-  set pages 600
+  set pages 60000
 
   col sql_text format A80 wrap
-  select m.sql_id, sql_exec_id, round(m.elapsed_time/1000000) "Elapsed(s)", 
-         round(m.CPU_TIME/1000000) "Cpu(s)", sql_text
-  from v\$sql_monitor m, v\$sql s
+  select  m.inst_id,m.sql_id, sql_exec_id, round(m.elapsed_time/1000000) "Elapsed(s)", 
+         round(m.CPU_TIME/1000000) "Cpu(s)", s.sql_text
+  from gv\$sql_monitor m, gv\$sql s
   where m.SQL_ID = s.SQL_ID
     and m.SQL_CHILD_ADDRESS = s.CHILD_ADDRESS
     and m.PX_SERVER# is null
+    and m.inst_id=s.inst_id
   order by SQL_EXEC_START;
 !
   exit 0
