@@ -1,0 +1,31 @@
+navisusr @ MN4OUAT SQL> select count(1) from edi_batch where gkey = 1268883973;
+
+  COUNT(1)
+----------
+         1
+
+navisusr @ MN4OUAT SQL> select count(1) from edi_transaction where edibat_gkey = 1268883973;
+
+  COUNT(1)
+----------
+      1304
+
+navisusr @ MN4OUAT SQL> select count(1) from edi_segment where edibatch_gkey = 1268883973;
+
+  COUNT(1)
+----------
+     10542
+
+navisusr @ MN4OUAT SQL> select count(1) from edi_error where editran_gkey in (select gkey from edi_transaction where edibat_gkey = 1268883973);
+
+  COUNT(1)
+----------
+      1339
+
+navisusr @ MN4OUAT SQL> select count(1) from edi_transaction_keyword where editran_gkey in (select gkey from edi_transaction where edibat_gkey = 1268883973);
+
+  COUNT(1)
+----------
+      3912
+
+navisusr @ MN4OUAT SQL> spool off;

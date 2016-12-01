@@ -1,0 +1,121 @@
+SQL> /
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2560530661
+
+------------------------------------------------------------------------------------------------------------------------------------------
+| Id  | Operation                                   | Name                       | Rows  | Bytes | Cost (%CPU)| Time     | Pstart| Pstop |
+------------------------------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                            |                            |     1 |    41 |    39   (6)| 00:00:01 |       |       |
+|   1 |  SORT AGGREGATE                             |                            |     1 |    41 |            |          |       |       |
+|   2 |   VIEW                                      |                            |     3 |   123 |    39   (6)| 00:00:01 |       |       |
+|   3 |    UNION-ALL                                |                            |       |       |            |          |       |       |
+|   4 |     NESTED LOOPS                            |                            |       |       |            |          |       |       |
+|   5 |      NESTED LOOPS                           |                            |     1 |   143 |    12   (9)| 00:00:01 |       |       |
+|   6 |       NESTED LOOPS                          |                            |     1 |    93 |    10  (10)| 00:00:01 |       |       |
+|   7 |        NESTED LOOPS                         |                            |     1 |    46 |     7  (15)| 00:00:01 |       |       |
+|   8 |         TABLE ACCESS BY INDEX ROWID         | FA_BOOK_CONTROLS           |     1 |    20 |     1   (0)| 00:00:01 |       |       |
+|*  9 |          INDEX UNIQUE SCAN                  | FA_BOOK_CONTROLS_U1        |     1 |       |     0   (0)| 00:00:01 |       |       |
+|  10 |         VIEW                                | VW_SQ_1                    |     1 |    26 |     6  (17)| 00:00:01 |       |       |
+|  11 |          SORT GROUP BY                      |                            |     1 |    28 |     6  (17)| 00:00:01 |       |       |
+|  12 |           TABLE ACCESS BY GLOBAL INDEX ROWID| FA_DEPRN_DETAIL            |     1 |    28 |     5   (0)| 00:00:01 | ROWID | ROWID |
+|* 13 |            INDEX RANGE SCAN                 | FA_DEPRN_DETAIL_N1         |     1 |       |     4   (0)| 00:00:01 |       |       |
+|* 14 |        TABLE ACCESS BY GLOBAL INDEX ROWID   | FA_DEPRN_DETAIL            |     1 |    47 |     3   (0)| 00:00:01 | ROWID | ROWID |
+|* 15 |         INDEX UNIQUE SCAN                   | FA_DEPRN_DETAIL_U1         |     1 |       |     2   (0)| 00:00:01 |       |       |
+|* 16 |       INDEX UNIQUE SCAN                     | FA_DISTRIBUTION_HISTORY_U1 |     1 |       |     1   (0)| 00:00:01 |       |       |
+|* 17 |      TABLE ACCESS BY INDEX ROWID            | FA_DISTRIBUTION_HISTORY    |     1 |    50 |     2   (0)| 00:00:01 |       |       |
+|* 18 |     FILTER                                  |                            |       |       |            |          |       |       |
+|  19 |      HASH GROUP BY                          |                            |     1 |   199 |    15   (7)| 00:00:01 |       |       |
+|  20 |       NESTED LOOPS                          |                            |       |       |            |          |       |       |
+|  21 |        NESTED LOOPS                         |                            |     1 |   199 |    14   (0)| 00:00:01 |       |       |
+|  22 |         MERGE JOIN CARTESIAN                |                            |     1 |   154 |    10   (0)| 00:00:01 |       |       |
+|  23 |          NESTED LOOPS                       |                            |       |       |            |          |       |       |
+|  24 |           NESTED LOOPS                      |                            |     1 |   126 |     6   (0)| 00:00:01 |       |       |
+|  25 |            NESTED LOOPS                     |                            |     1 |    90 |     4   (0)| 00:00:01 |       |       |
+|  26 |             TABLE ACCESS BY INDEX ROWID     | FA_BOOK_CONTROLS           |     1 |    32 |     1   (0)| 00:00:01 |       |       |
+|* 27 |              INDEX UNIQUE SCAN              | FA_BOOK_CONTROLS_U1        |     1 |       |     0   (0)| 00:00:01 |       |       |
+|* 28 |             TABLE ACCESS BY INDEX ROWID     | FA_DISTRIBUTION_HISTORY    |     1 |    58 |     3   (0)| 00:00:01 |       |       |
+|* 29 |              INDEX RANGE SCAN               | FA_DISTRIBUTION_HISTORY_N2 |     1 |       |     2   (0)| 00:00:01 |       |       |
+|* 30 |            INDEX RANGE SCAN                 | FA_DISTRIBUTION_HISTORY_N3 |     1 |       |     1   (0)| 00:00:01 |       |       |
+|* 31 |           TABLE ACCESS BY INDEX ROWID       | FA_DISTRIBUTION_HISTORY    |     1 |    36 |     2   (0)| 00:00:01 |       |       |
+|  32 |          BUFFER SORT                        |                            |     1 |    28 |     8   (0)| 00:00:01 |       |       |
+|  33 |           TABLE ACCESS BY GLOBAL INDEX ROWID| FA_DEPRN_DETAIL            |     1 |    28 |     4   (0)| 00:00:01 | ROWID | ROWID |
+|* 34 |            INDEX RANGE SCAN                 | FA_DEPRN_DETAIL_N1         |     1 |       |     3   (0)| 00:00:01 |       |       |
+|* 35 |         INDEX RANGE SCAN                    | FA_DEPRN_DETAIL_U1         |     1 |       |     3   (0)| 00:00:01 |       |       |
+|* 36 |        TABLE ACCESS BY GLOBAL INDEX ROWID   | FA_DEPRN_DETAIL            |     1 |    45 |     4   (0)| 00:00:01 | ROWID | ROWID |
+|* 37 |     FILTER                                  |                            |       |       |            |          |       |       |
+|  38 |      NESTED LOOPS                           |                            |       |       |            |          |       |       |
+|  39 |       NESTED LOOPS                          |                            |     1 |   180 |     8   (0)| 00:00:01 |       |       |
+|  40 |        NESTED LOOPS                         |                            |     1 |   124 |     5   (0)| 00:00:01 |       |       |
+|  41 |         MERGE JOIN CARTESIAN                |                            |     1 |    96 |     5   (0)| 00:00:01 |       |       |
+|  42 |          NESTED LOOPS                       |                            |     1 |    64 |     4   (0)| 00:00:01 |       |       |
+|  43 |           TABLE ACCESS BY INDEX ROWID       | FA_BOOK_CONTROLS           |     1 |    20 |     1   (0)| 00:00:01 |       |       |
+|* 44 |            INDEX UNIQUE SCAN                | FA_BOOK_CONTROLS_U1        |     1 |       |     0   (0)| 00:00:01 |       |       |
+|* 45 |           TABLE ACCESS BY INDEX ROWID       | FA_DISTRIBUTION_HISTORY    |     1 |    44 |     3   (0)| 00:00:01 |       |       |
+|* 46 |            INDEX RANGE SCAN                 | FA_DISTRIBUTION_HISTORY_N2 |     1 |       |     2   (0)| 00:00:01 |       |       |
+|  47 |          BUFFER SORT                        |                            |     8 |   256 |     2   (0)| 00:00:01 |       |       |
+|* 48 |           INDEX RANGE SCAN                  | FA_LOOKUPS_TL_U1           |     8 |   256 |     1   (0)| 00:00:01 |       |       |
+|* 49 |         INDEX UNIQUE SCAN                   | FA_LOOKUPS_B_U1            |     1 |    28 |     0   (0)| 00:00:01 |       |       |
+|* 50 |        INDEX RANGE SCAN                     | FA_ADJUSTMENTS_N1          |     1 |       |     2   (0)| 00:00:01 |       |       |
+|* 51 |       TABLE ACCESS BY INDEX ROWID           | FA_ADJUSTMENTS             |     1 |    56 |     3   (0)| 00:00:01 |       |       |
+|* 52 |      INDEX RANGE SCAN                       | FA_DEPRN_DETAIL_N1         |     1 |    22 |     4   (0)| 00:00:01 |       |       |
+------------------------------------------------------------------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   9 - access("BC"."BOOK_TYPE_CODE"=:B5)
+  13 - access("DD2"."ASSET_ID"=TO_NUMBER(:B6) AND "DD2"."BOOK_TYPE_CODE"=:B5 AND "DD2"."PERIOD_COUNTER"<=TO_NUMBER(:B7))
+  14 - filter("DD"."ASSET_ID"=TO_NUMBER(:B6))
+  15 - access("ITEM_1"="DD"."DISTRIBUTION_ID" AND "DD"."BOOK_TYPE_CODE"=:B5 AND "DD"."PERIOD_COUNTER"="MAX(DD2.PERIOD_COUNTER)")
+  16 - access("DD"."DISTRIBUTION_ID"="DH"."DISTRIBUTION_ID")
+  17 - filter("DH"."ASSET_ID"=TO_NUMBER(:B6) AND "DH"."CODE_COMBINATION_ID"=TO_NUMBER(:B2) AND "DH"."LOCATION_ID"=TO_NUMBER(:B4)
+              AND (:B3 IS NULL AND "DH"."ASSIGNED_TO" IS NULL OR "DH"."ASSIGNED_TO"=TO_NUMBER(:B3)) AND "DH"."DATE_EFFECTIVE"<=:B1 AND
+              NVL("DH"."DATE_INEFFECTIVE",TO_NUMBER(:B1)+1)>:B1 AND "DH"."BOOK_TYPE_CODE"=NVL("BC"."DISTRIBUTION_SOURCE_BOOK",:B5))
+  18 - filter("DD"."PERIOD_COUNTER"=MAX("DD2"."PERIOD_COUNTER"))
+  27 - access("BC"."BOOK_TYPE_CODE"=:B5)
+  28 - filter("DH"."CODE_COMBINATION_ID"=TO_NUMBER(:B2) AND "DH"."LOCATION_ID"=TO_NUMBER(:B4) AND (:B3 IS NULL AND
+              "DH"."ASSIGNED_TO" IS NULL OR "DH"."ASSIGNED_TO"=TO_NUMBER(:B3)) AND "DH"."DATE_EFFECTIVE"<=:B1 AND
+              NVL("DH"."DATE_INEFFECTIVE",TO_NUMBER(:B1)+1)>:B1)
+  29 - access("DH"."ASSET_ID"=TO_NUMBER(:B6) AND "DH"."BOOK_TYPE_CODE"=NVL("BC"."DISTRIBUTION_SOURCE_BOOK",:B5))
+  30 - access("DH"."TRANSACTION_HEADER_ID_IN"="DH_PRIOR"."TRANSACTION_HEADER_ID_OUT")
+       filter("DH_PRIOR"."TRANSACTION_HEADER_ID_OUT" IS NOT NULL)
+  31 - filter("DH_PRIOR"."ASSET_ID"=TO_NUMBER(:B6) AND "DH"."BOOK_TYPE_CODE"="DH_PRIOR"."BOOK_TYPE_CODE")
+  34 - access("DD2"."ASSET_ID"=TO_NUMBER(:B6) AND "DD2"."BOOK_TYPE_CODE"=:B5 AND "DD2"."PERIOD_COUNTER"<=TO_NUMBER(:B7))
+  35 - access("DD2"."DISTRIBUTION_ID"="DD"."DISTRIBUTION_ID" AND "DD"."BOOK_TYPE_CODE"=:B5)
+       filter("DD"."DISTRIBUTION_ID"="DH_PRIOR"."DISTRIBUTION_ID")
+  36 - filter("DD"."ASSET_ID"=TO_NUMBER(:B6))
+  37 - filter( NOT EXISTS (SELECT 0 FROM "FA"."FA_DEPRN_DETAIL" "DD" WHERE "DD"."PERIOD_COUNTER"=TO_NUMBER(:B7) AND
+              "DD"."BOOK_TYPE_CODE"=:B5 AND "DD"."ASSET_ID"=TO_NUMBER(:B6)))
+  44 - access("BC"."BOOK_TYPE_CODE"=:B5)
+  45 - filter("DH"."LOCATION_ID"=TO_NUMBER(:B4) AND (:B3 IS NULL AND "DH"."ASSIGNED_TO" IS NULL OR
+              "DH"."ASSIGNED_TO"=TO_NUMBER(:B3)) AND "DH"."DATE_EFFECTIVE"<=:B1 AND NVL("DH"."DATE_INEFFECTIVE",TO_NUMBER(:B1)+1)>:B1)
+  46 - access("DH"."ASSET_ID"=TO_NUMBER(:B6) AND "DH"."BOOK_TYPE_CODE"=NVL("BC"."DISTRIBUTION_SOURCE_BOOK",:B5))
+  48 - access("T"."LOOKUP_TYPE"='JOURNAL ENTRIES' AND "T"."LANGUAGE"=USERENV('LANG'))
+       filter("T"."LANGUAGE"=USERENV('LANG'))
+  49 - access("B"."LOOKUP_TYPE"='JOURNAL ENTRIES' AND "B"."LOOKUP_CODE"="T"."LOOKUP_CODE")
+       filter("B"."LOOKUP_CODE"='ADDITION COST' OR "B"."LOOKUP_CODE"='DEPRECIATION RESERVE')
+  50 - access("ADJ"."DISTRIBUTION_ID"="DH"."DISTRIBUTION_ID" AND "ADJ"."BOOK_TYPE_CODE"=:B5 AND
+              "ADJ"."PERIOD_COUNTER_CREATED"=TO_NUMBER(:B7))
+       filter("ADJ"."SOURCE_TYPE_CODE"<>'ADDITION' AND ("ADJ"."ADJUSTMENT_TYPE"='CIP COST' OR "ADJ"."ADJUSTMENT_TYPE"='COST' OR
+              "ADJ"."ADJUSTMENT_TYPE"='RESERVE') AND "ADJ"."SOURCE_TYPE_CODE"<>'DEPRECIATION' AND "ADJ"."SOURCE_TYPE_CODE"<>'CIP ADDITION')
+  51 - filter("ADJ"."ASSET_ID"=TO_NUMBER(:B6) AND (("ADJ"."ADJUSTMENT_TYPE"='CIP COST' OR "ADJ"."ADJUSTMENT_TYPE"='COST') AND
+              "B"."LOOKUP_CODE"='ADDITION COST' OR "ADJ"."ADJUSTMENT_TYPE"='RESERVE' AND "B"."LOOKUP_CODE"='DEPRECIATION RESERVE'))
+  52 - access("DD"."ASSET_ID"=TO_NUMBER(:B6) AND "DD"."BOOK_TYPE_CODE"=:B5 AND "DD"."PERIOD_COUNTER"=TO_NUMBER(:B7))
+
+101 rows selected.
+
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 2137789089
+
+---------------------------------------------------------------------------------------------
+| Id  | Operation                         | Name    | Rows  | Bytes | Cost (%CPU)| Time     |
+---------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                  |         |  8168 | 16336 |    29   (0)| 00:00:01 |
+|   1 |  COLLECTION ITERATOR PICKLER FETCH| DISPLAY |  8168 | 16336 |    29   (0)| 00:00:01 |
+---------------------------------------------------------------------------------------------
+
+SQL> spool off;

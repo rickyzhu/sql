@@ -1,0 +1,529 @@
+todata @ DCBUDB SQL> SELECT VS.DCB_VOY_CD
+  2    ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+  3     , 'OB', DECODE(CD.CNTR_STATUS, 'IE', 1, 'TE', 1, 0), 0), 0))           PLAN_DISC_MT
+  4    ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+  5     , 'OB', DECODE(CD.CNTR_STATUS, 'IF', 1, 'TF', 1, 0), 0), 0))           PLAN_DISC_FULL
+  6    ,    SUM(DECODE(CD.CNTR_STATUS, 'EE', 1, 'TE', 1, 0)        )           PLAN_LOAD_MT
+  7    ,    SUM(DECODE(CD.CNTR_STATUS, 'EF', 1, 'TF', 1, 0)        )           PLAN_LOAD_FULL
+  8  FROM EP_VOY_SCHEDULE_VW VS, EP_CNTR_DTL_VW CD
+  9  WHERE VS.ETB_DATE_TIME <  TO_CHAR(SYSDATE + 7, 'YYYYMMDDHH24MISS')
+ 10   AND  VS.ETB_DATE_TIME >= TO_CHAR(SYSDATE    , 'YYYYMMDDHH24MISS')
+ 11   AND  VS.DCB_VOY_CD IN (CD.I_DCB_VOY_CD, CD.O_DCB_VOY_CD)
+ 12  GROUP BY VS.DCB_VOY_CD
+ 13  ORDER BY 1
+ 14  /
+SELECT VS.DCB_VOY_CD
+*
+ERROR at line 1:
+ORA-12801: error signaled in parallel query server P002
+ORA-01422: exact fetch returns more than requested number of rows
+ORA-06512: at "TODATA.EP_GET_CNTR_STATUS", line 44
+
+
+todata @ DCBUDB SQL> SELECT DCB_VOY_CD
+  2    ,    SUM(DECODE(I_OB, 'Y', DECODE(EP_BS, 'IE', 1, 'TE', 1, 0), 0)) PLAN_DISC_MT
+  3    ,    SUM(DECODE(I_OB, 'Y', DECODE(EP_BS, 'IF', 1, 'TF', 1, 0), 0)) PLAN_DISC_FULL
+  4    ,    SUM(                  DECODE(EP_BS, 'EE', 1, 'TE', 1, 0)    ) PLAN_LOAD_MT
+  5    ,    SUM(                  DECODE(EP_BS, 'EF', 1, 'TF', 1, 0)    ) PLAN_LOAD_FULL
+  6  FROM ( SELECT  VS.MTL_VOY_CD                                 DCB_VOY_CD
+  7           ,    EP_GET_CNTR_STATUS(VCN.CNTR_ACC_KEY)           EP_BS
+  8           ,    DECODE(VCN.I_O_IND || CD.CUR_LA_CD,'IOB','Y')  I_OB
+  9           ,    CNTR_STATUS
+ 10         FROM   VOY_HIST       VH
+ 11           ,    VOY_SCHEDULE   VS
+ 12           ,    VOY_CNTR_NO   VCN
+ 13           ,    CNTR_DTL       CD
+ 14         WHERE   VH.VOY_DATE       >= TO_CHAR(SYSDATE -1, 'YYYYMMDDHH24MISS')
+ 15          AND    VH.DATE_TYPE       = 'E'
+ 16          AND    VS.VES_CD          =  VH.VES_CD
+ 17          AND    VS.VOY_CD          =  VH.VOY_CD
+ 18          AND    VS.ETB_DATE_TIME
+ 19               BETWEEN TO_CHAR(SYSDATE               , 'YYYYMMDDHH24MISS')
+ 20                 AND   TO_CHAR(SYSDATE +7 -1/24/60/60, 'YYYYMMDDHH24MISS')
+ 21          AND   VCN.MTL_VOY_CD      =  VS.MTL_VOY_CD
+ 22          AND   VCN.I_O_IND IN ('I','O')
+ 23          AND    CD.CNTR_ACC_KEY    = VCN.CNTR_ACC_KEY
+ 24        UNION ALL
+ 25         SELECT LTR_ID                                         DCB_VOY_CD
+ 26           ,    EP_GET_CNTR_STATUS(VCN.CNTR_ACC_KEY)           EP_BS
+ 27           ,    DECODE(VCN.I_O_IND || CD.CUR_LA_CD,'AOB','Y')  I_OB
+ 28           ,    CNTR_STATUS
+ 29         FROM   LTR_SCHEDULE
+ 30           ,    VOY_CNTR_NO   VCN
+ 31           ,    CNTR_DTL       CD
+ 32         WHERE ETB_DATE_TIME
+ 33               BETWEEN TO_CHAR(SYSDATE               , 'YYYYMMDDHH24MISS')
+ 34                 AND   TO_CHAR(SYSDATE +7 -1/24/60/60, 'YYYYMMDDHH24MISS')
+ 35          AND   VCN.MTL_VOY_CD = LTR_ID
+ 36          AND   VCN.I_O_IND IN ('A','B')
+ 37          AND    CD.CNTR_ACC_KEY    = VCN.CNTR_ACC_KEY
+ 38       )
+ 39    ,  REF_DTL
+ 40  WHERE  CNTR_STATUS  != 'RS'
+ 41   AND   REC_TYPE_IND  = '4'
+ 42   AND   REF_CD        = CNTR_STATUS
+ 43  GROUP BY DCB_VOY_CD
+ 44  ORDER BY 1
+ 45  /
+
+DCB_VOY_CD PLAN_DISC_MT PLAN_DISC_FULL PLAN_LOAD_MT PLAN_LOAD_FULL
+---------- ------------ -------------- ------------ --------------
+12/0251               0              1            0              0
+L002999               0              0            0              0
+L003000               0              0            0              0
+
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 3259230188
+
+----------------------------------------------------------------------------------------------------
+| Id  | Operation                           | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                    |              |     2 |  4040 |   140   (1)| 00:00:02 |
+|   1 |  SORT GROUP BY                      |              |     2 |  4040 |   140   (1)| 00:00:02 |
+|   2 |   NESTED LOOPS                      |              |     2 |  4040 |   139   (0)| 00:00:02 |
+|   3 |    VIEW                             |              |    53 |   104K|   139   (0)| 00:00:02 |
+|   4 |     UNION-ALL                       |              |       |       |            |          |
+|*  5 |      FILTER                         |              |       |       |            |          |
+|   6 |       NESTED LOOPS                  |              |     1 |    94 |    21   (0)| 00:00:01 |
+|   7 |        NESTED LOOPS                 |              |     1 |    74 |    19   (0)| 00:00:01 |
+|   8 |         NESTED LOOPS                |              |     1 |    51 |    16   (0)| 00:00:01 |
+|*  9 |          INDEX RANGE SCAN           | VOY_HIST_IX1 |    14 |   294 |     2   (0)| 00:00:01 |
+|* 10 |          TABLE ACCESS BY INDEX ROWID| VOY_SCHEDULE |     1 |    30 |     1   (0)| 00:00:01 |
+|* 11 |           INDEX UNIQUE SCAN         | VSC_PK       |     1 |       |     0   (0)| 00:00:01 |
+|  12 |         INLIST ITERATOR             |              |       |       |            |          |
+|* 13 |          INDEX RANGE SCAN           | VCN_PK       |    10 |   230 |     3   (0)| 00:00:01 |
+|* 14 |        TABLE ACCESS BY INDEX ROWID  | CNTR_DTL     |     1 |    20 |     2   (0)| 00:00:01 |
+|* 15 |         INDEX UNIQUE SCAN           | CDT_PK       |     1 |       |     1   (0)| 00:00:01 |
+|* 16 |      FILTER                         |              |       |       |            |          |
+|  17 |       NESTED LOOPS                  |              |    52 |  3328 |   118   (0)| 00:00:02 |
+|  18 |        NESTED LOOPS                 |              |    52 |  2288 |    14   (0)| 00:00:01 |
+|  19 |         TABLE ACCESS BY INDEX ROWID | LTR_SCHEDULE |     3 |    63 |     5   (0)| 00:00:01 |
+|* 20 |          INDEX RANGE SCAN           | LSC_IX1      |     3 |       |     2   (0)| 00:00:01 |
+|  21 |         INLIST ITERATOR             |              |       |       |            |          |
+|* 22 |          INDEX RANGE SCAN           | VCN_PK       |    20 |   460 |     3   (0)| 00:00:01 |
+|* 23 |        TABLE ACCESS BY INDEX ROWID  | CNTR_DTL     |     1 |    20 |     2   (0)| 00:00:01 |
+|* 24 |         INDEX UNIQUE SCAN           | CDT_PK       |     1 |       |     1   (0)| 00:00:01 |
+|* 25 |    INDEX UNIQUE SCAN                | RDTL_PK      |     1 |     6 |     0   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   5 - filter(TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS')<=TO_CHAR(SYSDATE@!+7-.000011574074074074
+              07407407407407407407407407,'YYYYMMDDHH24MISS'))
+   9 - access("VH"."VOY_DATE">=TO_CHAR(SYSDATE@!-1,'YYYYMMDDHH24MISS') AND
+              "VH"."DATE_TYPE"='E')
+       filter("VH"."DATE_TYPE"='E')
+  10 - filter("VS"."MTL_VOY_CD" IS NOT NULL AND
+              "VS"."ETB_DATE_TIME">=TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS') AND
+              "VS"."ETB_DATE_TIME"<=TO_CHAR(SYSDATE@!+7-.00001157407407407407407407407407407407407407,'YYY
+              YMMDDHH24MISS'))
+  11 - access("VS"."VES_CD"="VH"."VES_CD" AND "VS"."VOY_CD"="VH"."VOY_CD")
+  13 - access("VCN"."MTL_VOY_CD"="VS"."MTL_VOY_CD" AND ("VCN"."I_O_IND"='I' OR
+              "VCN"."I_O_IND"='O'))
+  14 - filter("CNTR_STATUS"<>'RS')
+  15 - access("CD"."CNTR_ACC_KEY"="VCN"."CNTR_ACC_KEY")
+  16 - filter(TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS')<=TO_CHAR(SYSDATE@!+7-.000011574074074074
+              07407407407407407407407407,'YYYYMMDDHH24MISS'))
+  20 - access("ETB_DATE_TIME">=TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS') AND
+              "ETB_DATE_TIME"<=TO_CHAR(SYSDATE@!+7-.00001157407407407407407407407407407407407407,'YYYYMMDD
+              HH24MISS'))
+  22 - access("VCN"."MTL_VOY_CD"="LTR_ID" AND ("VCN"."I_O_IND"='A' OR "VCN"."I_O_IND"='B'))
+  23 - filter("CNTR_STATUS"<>'RS')
+  24 - access("CD"."CNTR_ACC_KEY"="VCN"."CNTR_ACC_KEY")
+  25 - access("REF_CD"="CNTR_STATUS" AND "REC_TYPE_IND"='4')
+       filter("REF_CD"<>'RS')
+
+
+Statistics
+----------------------------------------------------------
+        344  recursive calls
+          0  db block gets
+       1591  consistent gets
+          2  physical reads
+          0  redo size
+        890  bytes sent via SQL*Net to client
+        753  bytes received via SQL*Net from client
+          2  SQL*Net roundtrips to/from client
+          1  sorts (memory)
+          0  sorts (disk)
+          3  rows processed
+
+todata @ DCBUDB SQL> /
+
+DCB_VOY_CD PLAN_DISC_MT PLAN_DISC_FULL PLAN_LOAD_MT PLAN_LOAD_FULL
+---------- ------------ -------------- ------------ --------------
+12/0251               0              1            0              0
+L002999               0              0            0              0
+L003000               0              0            0              0
+
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 3259230188
+
+----------------------------------------------------------------------------------------------------
+| Id  | Operation                           | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                    |              |     2 |  4040 |   140   (1)| 00:00:02 |
+|   1 |  SORT GROUP BY                      |              |     2 |  4040 |   140   (1)| 00:00:02 |
+|   2 |   NESTED LOOPS                      |              |     2 |  4040 |   139   (0)| 00:00:02 |
+|   3 |    VIEW                             |              |    53 |   104K|   139   (0)| 00:00:02 |
+|   4 |     UNION-ALL                       |              |       |       |            |          |
+|*  5 |      FILTER                         |              |       |       |            |          |
+|   6 |       NESTED LOOPS                  |              |     1 |    94 |    21   (0)| 00:00:01 |
+|   7 |        NESTED LOOPS                 |              |     1 |    74 |    19   (0)| 00:00:01 |
+|   8 |         NESTED LOOPS                |              |     1 |    51 |    16   (0)| 00:00:01 |
+|*  9 |          INDEX RANGE SCAN           | VOY_HIST_IX1 |    14 |   294 |     2   (0)| 00:00:01 |
+|* 10 |          TABLE ACCESS BY INDEX ROWID| VOY_SCHEDULE |     1 |    30 |     1   (0)| 00:00:01 |
+|* 11 |           INDEX UNIQUE SCAN         | VSC_PK       |     1 |       |     0   (0)| 00:00:01 |
+|  12 |         INLIST ITERATOR             |              |       |       |            |          |
+|* 13 |          INDEX RANGE SCAN           | VCN_PK       |    10 |   230 |     3   (0)| 00:00:01 |
+|* 14 |        TABLE ACCESS BY INDEX ROWID  | CNTR_DTL     |     1 |    20 |     2   (0)| 00:00:01 |
+|* 15 |         INDEX UNIQUE SCAN           | CDT_PK       |     1 |       |     1   (0)| 00:00:01 |
+|* 16 |      FILTER                         |              |       |       |            |          |
+|  17 |       NESTED LOOPS                  |              |    52 |  3328 |   118   (0)| 00:00:02 |
+|  18 |        NESTED LOOPS                 |              |    52 |  2288 |    14   (0)| 00:00:01 |
+|  19 |         TABLE ACCESS BY INDEX ROWID | LTR_SCHEDULE |     3 |    63 |     5   (0)| 00:00:01 |
+|* 20 |          INDEX RANGE SCAN           | LSC_IX1      |     3 |       |     2   (0)| 00:00:01 |
+|  21 |         INLIST ITERATOR             |              |       |       |            |          |
+|* 22 |          INDEX RANGE SCAN           | VCN_PK       |    20 |   460 |     3   (0)| 00:00:01 |
+|* 23 |        TABLE ACCESS BY INDEX ROWID  | CNTR_DTL     |     1 |    20 |     2   (0)| 00:00:01 |
+|* 24 |         INDEX UNIQUE SCAN           | CDT_PK       |     1 |       |     1   (0)| 00:00:01 |
+|* 25 |    INDEX UNIQUE SCAN                | RDTL_PK      |     1 |     6 |     0   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   5 - filter(TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS')<=TO_CHAR(SYSDATE@!+7-.000011574074074074
+              07407407407407407407407407,'YYYYMMDDHH24MISS'))
+   9 - access("VH"."VOY_DATE">=TO_CHAR(SYSDATE@!-1,'YYYYMMDDHH24MISS') AND
+              "VH"."DATE_TYPE"='E')
+       filter("VH"."DATE_TYPE"='E')
+  10 - filter("VS"."MTL_VOY_CD" IS NOT NULL AND
+              "VS"."ETB_DATE_TIME">=TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS') AND
+              "VS"."ETB_DATE_TIME"<=TO_CHAR(SYSDATE@!+7-.00001157407407407407407407407407407407407407,'YYY
+              YMMDDHH24MISS'))
+  11 - access("VS"."VES_CD"="VH"."VES_CD" AND "VS"."VOY_CD"="VH"."VOY_CD")
+  13 - access("VCN"."MTL_VOY_CD"="VS"."MTL_VOY_CD" AND ("VCN"."I_O_IND"='I' OR
+              "VCN"."I_O_IND"='O'))
+  14 - filter("CNTR_STATUS"<>'RS')
+  15 - access("CD"."CNTR_ACC_KEY"="VCN"."CNTR_ACC_KEY")
+  16 - filter(TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS')<=TO_CHAR(SYSDATE@!+7-.000011574074074074
+              07407407407407407407407407,'YYYYMMDDHH24MISS'))
+  20 - access("ETB_DATE_TIME">=TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS') AND
+              "ETB_DATE_TIME"<=TO_CHAR(SYSDATE@!+7-.00001157407407407407407407407407407407407407,'YYYYMMDD
+              HH24MISS'))
+  22 - access("VCN"."MTL_VOY_CD"="LTR_ID" AND ("VCN"."I_O_IND"='A' OR "VCN"."I_O_IND"='B'))
+  23 - filter("CNTR_STATUS"<>'RS')
+  24 - access("CD"."CNTR_ACC_KEY"="VCN"."CNTR_ACC_KEY")
+  25 - access("REF_CD"="CNTR_STATUS" AND "REC_TYPE_IND"='4')
+       filter("REF_CD"<>'RS')
+
+
+Statistics
+----------------------------------------------------------
+        336  recursive calls
+          0  db block gets
+       1591  consistent gets
+          0  physical reads
+          0  redo size
+        890  bytes sent via SQL*Net to client
+        753  bytes received via SQL*Net from client
+          2  SQL*Net roundtrips to/from client
+          1  sorts (memory)
+          0  sorts (disk)
+          3  rows processed
+
+todata @ DCBUDB SQL> The current SQL is as follows:-
+> SELECT VS.DCB_VOY_CD
+SP2-0734: unknown command beginning "The curren..." - rest of line ignored.
+todata @ DCBUDB SQL>   ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+SP2-0734: unknown command beginning ",    SUM(D..." - rest of line ignored.
+todata @ DCBUDB SQL>    , 'OB', DECODE(CD.CNTR_STATUS, 'IE', 1, 'TE', 1, 0), 0), 0))           PLAN_DISC_MT
+SP2-0734: unknown command beginning ", 'OB', DE..." - rest of line ignored.
+todata @ DCBUDB SQL>   ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+SP2-0734: unknown command beginning ",    SUM(D..." - rest of line ignored.
+SP2-0044: For a list of known commands enter HELP
+and to leave enter EXIT.
+todata @ DCBUDB SQL>    , 'OB', DECODE(CD.CNTR_STATUS, 'IF', 1, 'TF', 1, 0), 0), 0))           PLAN_DISC_FULL
+SP2-0734: unknown command beginning ", 'OB', DE..." - rest of line ignored.
+todata @ DCBUDB SQL>   ,    SUM(DECODE(CD.CNTR_STATUS, 'EE', 1, 'TE', 1, 0)        )           PLAN_LOAD_MT
+SP2-0734: unknown command beginning ",    SUM(D..." - rest of line ignored.
+todata @ DCBUDB SQL>   ,    SUM(DECODE(CD.CNTR_STATUS, 'EF', 1, 'TF', 1, 0)        )           PLAN_LOAD_FULL
+SP2-0734: unknown command beginning ",    SUM(D..." - rest of line ignored.
+todata @ DCBUDB SQL> FROM EP_VOY_SCHEDULE_VW VS, EP_CNTR_DTL_VW CD
+SP2-0734: unknown command beginning "FROM EP_VO..." - rest of line ignored.
+SP2-0044: For a list of known commands enter HELP
+and to leave enter EXIT.
+todata @ DCBUDB SQL> WHERE VS.ETB_DATE_TIME <  TO_CHAR(SYSDATE + 7, 'YYYYMMDDHH24MISS')
+SP2-0734: unknown command beginning "WHERE VS.E..." - rest of line ignored.
+todata @ DCBUDB SQL>  AND  VS.ETB_DATE_TIME >= TO_CHAR(SYSDATE    , 'YYYYMMDDHH24MISS')
+SP2-0734: unknown command beginning "AND  VS.ET..." - rest of line ignored.
+todata @ DCBUDB SQL>  AND  VS.DCB_VOY_CD IN (CD.I_DCB_VOY_CD, CD.O_DCB_VOY_CD)
+SP2-0734: unknown command beginning "AND  VS.DC..." - rest of line ignored.
+todata @ DCBUDB SQL> GROUP BY VS.DCB_VOY_CD
+SP2-0734: unknown command beginning "GROUP BY V..." - rest of line ignored.
+SP2-0044: For a list of known commands enter HELP
+and to leave enter EXIT.
+todata @ DCBUDB SQL> ORDER BY 1
+SP2-0042: unknown command "ORDER BY 1" - rest of line ignored.
+todata @ DCBUDB SQL> /
+
+DCB_VOY_CD PLAN_DISC_MT PLAN_DISC_FULL PLAN_LOAD_MT PLAN_LOAD_FULL
+---------- ------------ -------------- ------------ --------------
+12/0251               0              1            0              0
+L002999               0              0            0              0
+L003000               0              0            0              0
+
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 3259230188
+
+----------------------------------------------------------------------------------------------------
+| Id  | Operation                           | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                    |              |     2 |  4040 |   140   (1)| 00:00:02 |
+|   1 |  SORT GROUP BY                      |              |     2 |  4040 |   140   (1)| 00:00:02 |
+|   2 |   NESTED LOOPS                      |              |     2 |  4040 |   139   (0)| 00:00:02 |
+|   3 |    VIEW                             |              |    53 |   104K|   139   (0)| 00:00:02 |
+|   4 |     UNION-ALL                       |              |       |       |            |          |
+|*  5 |      FILTER                         |              |       |       |            |          |
+|   6 |       NESTED LOOPS                  |              |     1 |    94 |    21   (0)| 00:00:01 |
+|   7 |        NESTED LOOPS                 |              |     1 |    74 |    19   (0)| 00:00:01 |
+|   8 |         NESTED LOOPS                |              |     1 |    51 |    16   (0)| 00:00:01 |
+|*  9 |          INDEX RANGE SCAN           | VOY_HIST_IX1 |    14 |   294 |     2   (0)| 00:00:01 |
+|* 10 |          TABLE ACCESS BY INDEX ROWID| VOY_SCHEDULE |     1 |    30 |     1   (0)| 00:00:01 |
+|* 11 |           INDEX UNIQUE SCAN         | VSC_PK       |     1 |       |     0   (0)| 00:00:01 |
+|  12 |         INLIST ITERATOR             |              |       |       |            |          |
+|* 13 |          INDEX RANGE SCAN           | VCN_PK       |    10 |   230 |     3   (0)| 00:00:01 |
+|* 14 |        TABLE ACCESS BY INDEX ROWID  | CNTR_DTL     |     1 |    20 |     2   (0)| 00:00:01 |
+|* 15 |         INDEX UNIQUE SCAN           | CDT_PK       |     1 |       |     1   (0)| 00:00:01 |
+|* 16 |      FILTER                         |              |       |       |            |          |
+|  17 |       NESTED LOOPS                  |              |    52 |  3328 |   118   (0)| 00:00:02 |
+|  18 |        NESTED LOOPS                 |              |    52 |  2288 |    14   (0)| 00:00:01 |
+|  19 |         TABLE ACCESS BY INDEX ROWID | LTR_SCHEDULE |     3 |    63 |     5   (0)| 00:00:01 |
+|* 20 |          INDEX RANGE SCAN           | LSC_IX1      |     3 |       |     2   (0)| 00:00:01 |
+|  21 |         INLIST ITERATOR             |              |       |       |            |          |
+|* 22 |          INDEX RANGE SCAN           | VCN_PK       |    20 |   460 |     3   (0)| 00:00:01 |
+|* 23 |        TABLE ACCESS BY INDEX ROWID  | CNTR_DTL     |     1 |    20 |     2   (0)| 00:00:01 |
+|* 24 |         INDEX UNIQUE SCAN           | CDT_PK       |     1 |       |     1   (0)| 00:00:01 |
+|* 25 |    INDEX UNIQUE SCAN                | RDTL_PK      |     1 |     6 |     0   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   5 - filter(TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS')<=TO_CHAR(SYSDATE@!+7-.000011574074074074
+              07407407407407407407407407,'YYYYMMDDHH24MISS'))
+   9 - access("VH"."VOY_DATE">=TO_CHAR(SYSDATE@!-1,'YYYYMMDDHH24MISS') AND
+              "VH"."DATE_TYPE"='E')
+       filter("VH"."DATE_TYPE"='E')
+  10 - filter("VS"."MTL_VOY_CD" IS NOT NULL AND
+              "VS"."ETB_DATE_TIME">=TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS') AND
+              "VS"."ETB_DATE_TIME"<=TO_CHAR(SYSDATE@!+7-.00001157407407407407407407407407407407407407,'YYY
+              YMMDDHH24MISS'))
+  11 - access("VS"."VES_CD"="VH"."VES_CD" AND "VS"."VOY_CD"="VH"."VOY_CD")
+  13 - access("VCN"."MTL_VOY_CD"="VS"."MTL_VOY_CD" AND ("VCN"."I_O_IND"='I' OR
+              "VCN"."I_O_IND"='O'))
+  14 - filter("CNTR_STATUS"<>'RS')
+  15 - access("CD"."CNTR_ACC_KEY"="VCN"."CNTR_ACC_KEY")
+  16 - filter(TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS')<=TO_CHAR(SYSDATE@!+7-.000011574074074074
+              07407407407407407407407407,'YYYYMMDDHH24MISS'))
+  20 - access("ETB_DATE_TIME">=TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS') AND
+              "ETB_DATE_TIME"<=TO_CHAR(SYSDATE@!+7-.00001157407407407407407407407407407407407407,'YYYYMMDD
+              HH24MISS'))
+  22 - access("VCN"."MTL_VOY_CD"="LTR_ID" AND ("VCN"."I_O_IND"='A' OR "VCN"."I_O_IND"='B'))
+  23 - filter("CNTR_STATUS"<>'RS')
+  24 - access("CD"."CNTR_ACC_KEY"="VCN"."CNTR_ACC_KEY")
+  25 - access("REF_CD"="CNTR_STATUS" AND "REC_TYPE_IND"='4')
+       filter("REF_CD"<>'RS')
+
+
+Statistics
+----------------------------------------------------------
+        336  recursive calls
+          0  db block gets
+       1591  consistent gets
+          0  physical reads
+          0  redo size
+        890  bytes sent via SQL*Net to client
+        753  bytes received via SQL*Net from client
+          2  SQL*Net roundtrips to/from client
+          1  sorts (memory)
+          0  sorts (disk)
+          3  rows processed
+
+todata @ DCBUDB SQL> The current SQL is as follows:-
+> SELECT VS.DCB_VOY_CD
+SP2-0734: unknown command beginning "The curren..." - rest of line ignored.
+todata @ DCBUDB SQL>   ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+SP2-0734: unknown command beginning ",    SUM(D..." - rest of line ignored.
+todata @ DCBUDB SQL>    , 'OB', DECODE(CD.CNTR_STATUS, 'IE', 1, 'TE', 1, 0), 0), 0))           PLAN_DISC_MT
+SP2-0734: unknown command beginning ", 'OB', DE..." - rest of line ignored.
+todata @ DCBUDB SQL>   ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+SP2-0734: unknown command beginning ",    SUM(D..." - rest of line ignored.
+SP2-0044: For a list of known commands enter HELP
+and to leave enter EXIT.
+todata @ DCBUDB SQL>    , 'OB', DECODE(CD.CNTR_STATUS, 'IF', 1, 'TF', 1, 0), 0), 0))           PLAN_DISC_FULL
+SP2-0734: unknown command beginning ", 'OB', DE..." - rest of line ignored.
+todata @ DCBUDB SQL>   ,    SUM(DECODE(CD.CNTR_STATUS, 'EE', 1, 'TE', 1, 0)        )           PLAN_LOAD_MT
+SP2-0734: unknown command beginning ",    SUM(D..." - rest of line ignored.
+todata @ DCBUDB SQL>   ,    SUM(DECODE(CD.CNTR_STATUS, 'EF', 1, 'TF', 1, 0)        )           PLAN_LOAD_FULL
+SP2-0734: unknown command beginning ",    SUM(D..." - rest of line ignored.
+todata @ DCBUDB SQL> FROM EP_VOY_SCHEDULE_VW VS, EP_CNTR_DTL_VW CD
+SP2-0734: unknown command beginning "FROM EP_VO..." - rest of line ignored.
+SP2-0044: For a list of known commands enter HELP
+and to leave enter EXIT.
+todata @ DCBUDB SQL> WHERE VS.ETB_DATE_TIME <  TO_CHAR(SYSDATE + 7, 'YYYYMMDDHH24MISS')
+SP2-0734: unknown command beginning "WHERE VS.E..." - rest of line ignored.
+todata @ DCBUDB SQL>  AND  VS.ETB_DATE_TIME >= TO_CHAR(SYSDATE    , 'YYYYMMDDHH24MISS')
+SP2-0734: unknown command beginning "AND  VS.ET..." - rest of line ignored.
+todata @ DCBUDB SQL>  AND  VS.DCB_VOY_CD IN (CD.I_DCB_VOY_CD, CD.O_DCB_VOY_CD)
+SP2-0734: unknown command beginning "AND  VS.DC..." - rest of line ignored.
+todata @ DCBUDB SQL> GROUP BY VS.DCB_VOY_CD
+SP2-0734: unknown command beginning "GROUP BY V..." - rest of line ignored.
+SP2-0044: For a list of known commands enter HELP
+and to leave enter EXIT.
+todata @ DCBUDB SQL> ORDER BY 1
+SP2-0042: unknown command "ORDER BY 1" - rest of line ignored.
+todata @ DCBUDB SQL> /
+
+DCB_VOY_CD PLAN_DISC_MT PLAN_DISC_FULL PLAN_LOAD_MT PLAN_LOAD_FULL
+---------- ------------ -------------- ------------ --------------
+12/0251               0              1            0              0
+L002999               0              0            0              0
+L003000               0              0            0              0
+
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 3259230188
+
+----------------------------------------------------------------------------------------------------
+| Id  | Operation                           | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                    |              |     2 |  4040 |   140   (1)| 00:00:02 |
+|   1 |  SORT GROUP BY                      |              |     2 |  4040 |   140   (1)| 00:00:02 |
+|   2 |   NESTED LOOPS                      |              |     2 |  4040 |   139   (0)| 00:00:02 |
+|   3 |    VIEW                             |              |    53 |   104K|   139   (0)| 00:00:02 |
+|   4 |     UNION-ALL                       |              |       |       |            |          |
+|*  5 |      FILTER                         |              |       |       |            |          |
+|   6 |       NESTED LOOPS                  |              |     1 |    94 |    21   (0)| 00:00:01 |
+|   7 |        NESTED LOOPS                 |              |     1 |    74 |    19   (0)| 00:00:01 |
+|   8 |         NESTED LOOPS                |              |     1 |    51 |    16   (0)| 00:00:01 |
+|*  9 |          INDEX RANGE SCAN           | VOY_HIST_IX1 |    14 |   294 |     2   (0)| 00:00:01 |
+|* 10 |          TABLE ACCESS BY INDEX ROWID| VOY_SCHEDULE |     1 |    30 |     1   (0)| 00:00:01 |
+|* 11 |           INDEX UNIQUE SCAN         | VSC_PK       |     1 |       |     0   (0)| 00:00:01 |
+|  12 |         INLIST ITERATOR             |              |       |       |            |          |
+|* 13 |          INDEX RANGE SCAN           | VCN_PK       |    10 |   230 |     3   (0)| 00:00:01 |
+|* 14 |        TABLE ACCESS BY INDEX ROWID  | CNTR_DTL     |     1 |    20 |     2   (0)| 00:00:01 |
+|* 15 |         INDEX UNIQUE SCAN           | CDT_PK       |     1 |       |     1   (0)| 00:00:01 |
+|* 16 |      FILTER                         |              |       |       |            |          |
+|  17 |       NESTED LOOPS                  |              |    52 |  3328 |   118   (0)| 00:00:02 |
+|  18 |        NESTED LOOPS                 |              |    52 |  2288 |    14   (0)| 00:00:01 |
+|  19 |         TABLE ACCESS BY INDEX ROWID | LTR_SCHEDULE |     3 |    63 |     5   (0)| 00:00:01 |
+|* 20 |          INDEX RANGE SCAN           | LSC_IX1      |     3 |       |     2   (0)| 00:00:01 |
+|  21 |         INLIST ITERATOR             |              |       |       |            |          |
+|* 22 |          INDEX RANGE SCAN           | VCN_PK       |    20 |   460 |     3   (0)| 00:00:01 |
+|* 23 |        TABLE ACCESS BY INDEX ROWID  | CNTR_DTL     |     1 |    20 |     2   (0)| 00:00:01 |
+|* 24 |         INDEX UNIQUE SCAN           | CDT_PK       |     1 |       |     1   (0)| 00:00:01 |
+|* 25 |    INDEX UNIQUE SCAN                | RDTL_PK      |     1 |     6 |     0   (0)| 00:00:01 |
+----------------------------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   5 - filter(TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS')<=TO_CHAR(SYSDATE@!+7-.000011574074074074
+              07407407407407407407407407,'YYYYMMDDHH24MISS'))
+   9 - access("VH"."VOY_DATE">=TO_CHAR(SYSDATE@!-1,'YYYYMMDDHH24MISS') AND
+              "VH"."DATE_TYPE"='E')
+       filter("VH"."DATE_TYPE"='E')
+  10 - filter("VS"."MTL_VOY_CD" IS NOT NULL AND
+              "VS"."ETB_DATE_TIME">=TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS') AND
+              "VS"."ETB_DATE_TIME"<=TO_CHAR(SYSDATE@!+7-.00001157407407407407407407407407407407407407,'YYY
+              YMMDDHH24MISS'))
+  11 - access("VS"."VES_CD"="VH"."VES_CD" AND "VS"."VOY_CD"="VH"."VOY_CD")
+  13 - access("VCN"."MTL_VOY_CD"="VS"."MTL_VOY_CD" AND ("VCN"."I_O_IND"='I' OR
+              "VCN"."I_O_IND"='O'))
+  14 - filter("CNTR_STATUS"<>'RS')
+  15 - access("CD"."CNTR_ACC_KEY"="VCN"."CNTR_ACC_KEY")
+  16 - filter(TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS')<=TO_CHAR(SYSDATE@!+7-.000011574074074074
+              07407407407407407407407407,'YYYYMMDDHH24MISS'))
+  20 - access("ETB_DATE_TIME">=TO_CHAR(SYSDATE@!,'YYYYMMDDHH24MISS') AND
+              "ETB_DATE_TIME"<=TO_CHAR(SYSDATE@!+7-.00001157407407407407407407407407407407407407,'YYYYMMDD
+              HH24MISS'))
+  22 - access("VCN"."MTL_VOY_CD"="LTR_ID" AND ("VCN"."I_O_IND"='A' OR "VCN"."I_O_IND"='B'))
+  23 - filter("CNTR_STATUS"<>'RS')
+  24 - access("CD"."CNTR_ACC_KEY"="VCN"."CNTR_ACC_KEY")
+  25 - access("REF_CD"="CNTR_STATUS" AND "REC_TYPE_IND"='4')
+       filter("REF_CD"<>'RS')
+
+
+Statistics
+----------------------------------------------------------
+        336  recursive calls
+          0  db block gets
+       1591  consistent gets
+          0  physical reads
+          0  redo size
+        890  bytes sent via SQL*Net to client
+        753  bytes received via SQL*Net from client
+          2  SQL*Net roundtrips to/from client
+          1  sorts (memory)
+          0  sorts (disk)
+          3  rows processed
+
+todata @ DCBUDB SQL> SELECT VS.DCB_VOY_CD
+  2    ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+  3     , 'OB', DECODE(CD.CNTR_STATUS, 'IE', 1, 'TE', 1, 0), 0), 0))           PLAN_DISC_MT
+  4    ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+  5     , 'OB', DECODE(CD.CNTR_STATUS, 'IF', 1, 'TF', 1, 0), 0), 0))           PLAN_DISC_FULL
+  6    ,    SUM(DECODE(CD.CNTR_STATUS, 'EE', 1, 'TE', 1, 0)        )           PLAN_LOAD_MT
+  7    ,    SUM(DECODE(CD.CNTR_STATUS, 'EF', 1, 'TF', 1, 0)        )           PLAN_LOAD_FULL
+  8  FROM EP_VOY_SCHEDULE_VW VS, EP_CNTR_DTL_VW CD
+  9  WHERE VS.ETB_DATE_TIME <  TO_CHAR(SYSDATE + 7, 'YYYYMMDDHH24MISS')
+ 10   AND  VS.ETB_DATE_TIME >= TO_CHAR(SYSDATE    , 'YYYYMMDDHH24MISS')
+ 11   AND  VS.DCB_VOY_CD IN (CD.I_DCB_VOY_CD, CD.O_DCB_VOY_CD)
+ 12  GROUP BY VS.DCB_VOY_CD
+ 13  ORDER BY 1
+ 14  /
+SELECT VS.DCB_VOY_CD
+*
+ERROR at line 1:
+ORA-12801: error signaled in parallel query server P000
+ORA-01422: exact fetch returns more than requested number of rows
+ORA-06512: at "TODATA.EP_GET_CNTR_STATUS", line 44
+
+
+todata @ DCBUDB SQL> 
+todata @ DCBUDB SQL> 
+todata @ DCBUDB SQL> 
+todata @ DCBUDB SQL> 
+todata @ DCBUDB SQL> SELECT VS.DCB_VOY_CD
+  2    ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+  3     , 'OB', DECODE(CD.CNTR_STATUS, 'IE', 1, 'TE', 1, 0), 0), 0))           PLAN_DISC_MT
+  4    ,    SUM(DECODE(VS.DCB_VOY_CD, CD.I_DCB_VOY_CD, DECODE(SUBSTR(CD.LOCATION, 1, 2)
+  5     , 'OB', DECODE(CD.CNTR_STATUS, 'IF', 1, 'TF', 1, 0), 0), 0))           PLAN_DISC_FULL
+  6    ,    SUM(DECODE(CD.CNTR_STATUS, 'EE', 1, 'TE', 1, 0)        )           PLAN_LOAD_MT
+  7    ,    SUM(DECODE(CD.CNTR_STATUS, 'EF', 1, 'TF', 1, 0)        )           PLAN_LOAD_FULL
+  8  FROM EP_VOY_SCHEDULE_VW VS, EP_CNTR_DTL_VW CD
+  9  WHERE VS.ETB_DATE_TIME <  TO_CHAR(SYSDATE + 7, 'YYYYMMDDHH24MISS')
+ 10   AND  VS.ETB_DATE_TIME >= TO_CHAR(SYSDATE    , 'YYYYMMDDHH24MISS')
+ 11   AND  VS.DCB_VOY_CD IN (CD.I_DCB_VOY_CD, CD.O_DCB_VOY_CD)
+ 12  GROUP BY VS.DCB_VOY_CD
+ 13  ORDER BY 1
+ 14  /
+SELECT VS.DCB_VOY_CD
+*
+ERROR at line 1:
+ORA-12801: error signaled in parallel query server P002
+ORA-01422: exact fetch returns more than requested number of rows
+ORA-06512: at "TODATA.EP_GET_CNTR_STATUS", line 44
+
+
+todata @ DCBUDB SQL> exit

@@ -1,0 +1,2 @@
+select distinct replace(email_to,'MODERNTERMINAILS.COM','MODERNTERMINALS.COM') from COVCOD_APPLICATION
+/

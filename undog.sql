@@ -1,0 +1,8 @@
+col bytes format 999999999999
+col status format a10
+
+SELECT STATUS, SUM(BYTES) bytes, COUNT(*)
+FROM   DBA_UNDO_EXTENTS 
+GROUP BY STATUS
+ORDER BY STATUS
+/

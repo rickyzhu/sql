@@ -1,0 +1,1564 @@
+SQL> select pid,spid,substr(username,1,20) "USER" ,program,PGA_USED_MEM,PGA_ALLOC_MEM,PGA_FREEABLE_MEM,PGA_MAX_MEM
+  2  from v$process
+  3  where pga_alloc_mem=(select max(pga_alloc_mem) from v$process
+  4  where program not like '%LGWR%');
+
+ Orapid OSpid    USER                                          Program                     PGA used       PGA alloc PGA_FREEABLE_MEM
+------- -------- --------------------------------------------- -------------------- --------------- --------------- ----------------
+PGA_MAX_MEM
+-----------
+     28 24316    hwl33                                         oracle@dblxp03.hwl-e      41,826,340      48,620,484          4456448
+                                                               bis.com (ARC3)
+   48620484
+
+
+SQL> 
+SQL> set linesize 120
+SQL> set pagesize 120
+SQL> column spid heading 'OSpid' format a8
+SQL> column pid heading 'Orapid' format 999999
+SQL> column sid heading 'Sess id' format 99999
+SQL> column serial# heading 'Serial#' format 999999
+SQL> column status heading 'Status' format a8
+SQL> column pga_alloc_mem heading 'PGA alloc' format 99,999,999,999
+SQL> column pga_used_mem heading 'PGA used' format 99,999,999,999
+SQL> column username heading 'oracleuser' format a12
+SQL> column osuser heading 'OS user' format a12
+SQL> column program heading 'Program' format a20
+SQL> 
+SQL> SELECT p.spid,p.pid,s.sid,s.serial#,s.status,p.pga_alloc_mem,p.PGA_USED_MEM,s.username,s.osuser,s.program
+  2  FROM
+  3  v$process p,v$session s
+  4  WHERE s.paddr ( + ) = p.addr
+  5  Order by p.pga_alloc_mem desc;
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+24316         28       1       1 ACTIVE        48,620,484      41,826,340              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (ARC3)
+
+24314         27    2917       1 ACTIVE        45,278,148      41,826,340              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (ARC2)
+
+24310         25    2701       3 ACTIVE        45,278,148      41,826,340              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (ARC0)
+
+24312         26    2809       3 ACTIVE        44,164,036      41,826,340              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (ARC1)
+
+14374        325    1867   12809 ACTIVE        38,117,668       5,386,068 APPS         hwl33
+10828        596     886    9883 INACTIVE      30,974,244      29,524,348 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+24273         18    1945       1 ACTIVE        23,642,580      11,537,932              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (LGWR)
+
+11341         59     374   65361 ACTIVE        23,306,532      17,674,012 APPS         hwl33
+7417         439    2061   18233 INACTIVE      20,160,804      16,401,420 APPS         hwl33
+7417         439    2099   33781 INACTIVE      20,160,804      16,401,420 APPS         hwl33
+7417         439    2075   12423 INACTIVE      20,160,804      16,401,420 APPS         hwl33
+24257         10    1081       1 ACTIVE        18,956,884       7,215,284              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBW0)
+
+29597        572    1314   16069 INACTIVE      18,391,332      15,080,836 APPS         hwl33
+29597        572    1336    9091 INACTIVE      18,391,332      15,080,836 APPS         hwl33
+29597        572    1305    1819 INACTIVE      18,391,332      15,080,836 APPS         hwl33
+24634        499    2492   18005 INACTIVE      17,998,116      13,926,484 APPS         hwl33
+24634        499    2494    1833 INACTIVE      17,998,116      13,926,484 APPS         hwl33
+24634        499    2528   20867 INACTIVE      17,998,116      13,926,484 APPS         hwl33
+2256         496    2187    8527 INACTIVE      17,670,436      15,107,244 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+8196         590     265    7761 INACTIVE      17,032,132       3,179,988 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+30838        481     582   12995 INACTIVE      16,359,716      14,870,444 APPS         hwl33        JDBC Thin Client
+25220         38    1082       1 ACTIVE        15,966,500       8,619,228              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (Q002)
+
+18509        296    1767    5411 INACTIVE      15,918,020      13,471,998 APPS         hwl33        JDBC Thin Client
+22607        764     898    5267 INACTIVE      15,852,484      13,304,398 APPS         hwl33        JDBC Thin Client
+28103        107    2499   46719 INACTIVE      13,934,884      12,489,980 APPS         hwl33
+28103        107    2519    7777 INACTIVE      13,934,884      12,489,980 APPS         hwl33
+7852         585    2740   50869 INACTIVE      13,672,740      12,495,028 APPS         hwl33
+7852         585    2739   15757 INACTIVE      13,672,740      12,495,028 APPS         hwl33
+7852         585    2725    9859 INACTIVE      13,672,740      12,495,028 APPS         hwl33
+17520        451     337   17691 INACTIVE      13,476,132      11,308,644 APPS         hwl33
+17520        451     334    9347 INACTIVE      13,476,132      11,308,644 APPS         hwl33
+17520        451     332    2767 INACTIVE      13,476,132      11,308,644 APPS         hwl33
+24275         19    2053       1 ACTIVE        13,361,828       1,226,388              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (CKPT)
+
+5089         870     249    4151 INACTIVE      12,772,292      10,393,862 APPS         hwl33        JDBC Thin Client
+24269         16    1729       1 ACTIVE        12,657,060       7,287,692              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBW6)
+
+28931        610    2421    7933 INACTIVE      12,641,220       9,725,838 APPS         hwl33        JDBC Thin Client
+13211        665    2280   13137 INACTIVE      12,510,148       9,682,726 APPS         hwl33        JDBC Thin Client
+24265         14    1513       1 ACTIVE        12,460,452       7,574,476              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBW4)
+
+12142        166    2833   19219 INACTIVE      12,444,612      10,568,342 APPS         hwl33        JDBC Thin Client
+24277         20    2161       1 ACTIVE        12,296,484       1,661,948              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (SMON)
+
+21784        380    1744   29721 INACTIVE      12,248,004       9,745,118 APPS         hwl33        JDBC Thin Client
+31997         83    2946   54009 INACTIVE      12,182,468      10,499,774 APPS         hwl33        JDBC Thin Client
+29284        730     258   11781 INACTIVE      12,182,468      10,252,854 APPS         hwl33        JDBC Thin Client
+31604        243    2084   17145 INACTIVE      12,182,468       9,757,590 APPS         hwl33        JDBC Thin Client
+17327        782    2829    7897 INACTIVE      12,116,932       9,313,518 APPS         hwl33        JDBC Thin Client
+8613         229     583   38111 INACTIVE      12,051,396      10,393,430 APPS         hwl33        JDBC Thin Client
+24259         11    1190       1 ACTIVE        12,001,700       7,513,724              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBW1)
+
+2329         312     479    7595 INACTIVE      11,854,788       9,518,950 APPS         hwl33        JDBC Thin Client
+24253          8     865       1 ACTIVE        11,837,732       7,517,492              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DIA0)
+
+29231        104    2204   43857 INACTIVE      11,527,108       9,159,478 APPS         hwl33        JDBC Thin Client
+29225        101    1870   24763 INACTIVE      11,461,572       9,014,748 APPS         hwl33        JDBC Thin Client
+19180        215    2097   18931 INACTIVE      11,396,036       9,751,910 APPS         hwl33        JDBC Thin Client
+31918        102    1963   12903 INACTIVE      11,396,036       9,163,318 APPS         hwl33        JDBC Thin Client
+29770         87     331    9211 INACTIVE      11,396,036       9,282,262 APPS         hwl33        JDBC Thin Client
+25440        359    2502    6555 INACTIVE      11,378,980      10,470,508 APPS         hwl33
+25440        359    2526   24401 INACTIVE      11,378,980      10,470,508 APPS         hwl33
+25440        359    2525   11107 INACTIVE      11,378,980      10,470,508 APPS         hwl33
+24261         12    1297       1 ACTIVE        11,346,340       7,261,404              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBW2)
+
+25107         31     326       3 INACTIVE      11,330,500       8,851,710 DBSNMP       hwl33        emagent@dblxp03.hwl-
+                                                                                                    ebis.com (TNS V1-V3)
+
+3644         341     578   63529 INACTIVE      11,313,444       4,590,036 APPS         hwl33
+3644         341     556    9121 ACTIVE        11,313,444       4,590,036 APPS         hwl33
+7117         393     159    7863 INACTIVE      11,264,964       9,221,654 APPS         hwl33        JDBC Thin Client
+7674         345     989    4255 INACTIVE      11,199,428       8,727,894 APPS         hwl33        JDBC Thin Client
+16244        160    2177   14087 INACTIVE      11,068,356       8,977,870 APPS         hwl33        JDBC Thin Client
+19580        311     359   17405 INACTIVE      11,002,820       9,041,094 APPS         hwl33        JDBC Thin Client
+24496        406    1555   16925 INACTIVE      10,871,748       8,687,934 APPS         hwl33        JDBC Thin Client
+13679        678     682    3017 INACTIVE      10,871,748       8,602,918 APPS         hwl33        JDBC Thin Client
+5864         344     881   19773 INACTIVE      10,871,748       8,635,326 APPS         hwl33        JDBC Thin Client
+24263         13    1405       1 ACTIVE        10,822,052       7,745,852              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBW3)
+
+30844        483     789   32435 INACTIVE      10,789,156       8,908,564 APPS         hwl33        JDBC Thin Client
+24271         17    1837       1 ACTIVE        10,756,516       7,202,028              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBW7)
+
+24267         15    1621       1 ACTIVE        10,690,980       7,407,596              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBW5)
+
+2323         302    2380    1179 INACTIVE      10,675,140       9,140,702 APPS         hwl33        JDBC Thin Client
+7620         343     781     215 INACTIVE      10,527,012       8,591,580 APPS         hwl33        JDBC Thin Client
+12809        371     775   13759 INACTIVE      10,527,012       8,723,436 APPS         hwl33        JDBC Thin Client
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+5466         587    2961   20873 INACTIVE      10,527,012       9,107,620 APPS         hwl33
+5466         587    2962    7561 ACTIVE        10,527,012       9,107,620 APPS         hwl33
+16816        515    1240    5731 ACTIVE        10,527,012       8,225,580 APPS         hwl33
+1956         412    2209   18501 INACTIVE      10,461,476       7,687,884 APPS         hwl33
+1956         412    2166    8419 INACTIVE      10,461,476       7,687,884 APPS         hwl33
+4483         425     557   10977 INACTIVE      10,395,940       9,065,860 APPS         hwl33
+4483         425     579   15187 INACTIVE      10,395,940       9,065,860 APPS         hwl33
+4483         425     568    8653 INACTIVE      10,395,940       9,065,860 APPS         hwl33
+29250        108    2637    4385 INACTIVE      10,347,460       8,468,052 APPS         hwl33        JDBC Thin Client
+9866         438    1947    4155 INACTIVE      10,264,868       8,015,636 APPS         hwl33
+9866         438    1951   13263 INACTIVE      10,264,868       8,015,636 APPS         hwl33
+21032        733     549    8471 INACTIVE      10,150,852       8,599,518 APPS         hwl33        JDBC Thin Client
+29211         78    2430    6369 INACTIVE      10,133,796       8,558,796 APPS         hwl33        JDBC Thin Client
+24191        558    2838    1529 INACTIVE      10,133,796       8,515,388 APPS         hwl33
+24191        558    2825   25831 INACTIVE      10,133,796       8,515,388 APPS         hwl33
+25068         35     759       1 ACTIVE        10,093,684       1,483,388              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (CJQ0)
+
+4177         563     335    1253 INACTIVE      10,085,316       8,216,990 APPS         hwl33        JDBC Thin Client
+4008         419    2927   14513 INACTIVE      10,068,260       9,068,076 APPS         hwl33
+4008         419    2933   24167 INACTIVE      10,068,260       9,068,076 APPS         hwl33
+4008         419    2943    6885 INACTIVE      10,068,260       9,068,076 APPS         hwl33
+6255         509     588    4743 INACTIVE       9,937,188       8,836,460 APPS         hwl33
+6255         509     573   15573 INACTIVE       9,937,188       8,836,460 APPS         hwl33
+20280        552    2196   21973 INACTIVE       9,871,652       8,416,596 APPS         hwl33        JDBC Thin Client
+29229         85     123   10149 INACTIVE       9,692,100       7,919,446 APPS         hwl33        JDBC Thin Client
+26137        381    1840    5843 INACTIVE       9,675,044       6,789,348 APPS         hwl33
+26137        381    1876   11387 INACTIVE       9,675,044       6,789,348 APPS         hwl33
+4484         367     338   62165 INACTIVE       9,626,564       7,773,038 APPS         hwl33        JDBC Thin Client
+27216        520    1754   22799 INACTIVE       9,561,028       8,268,084 APPS         hwl33
+27216        520    1748   12295 INACTIVE       9,561,028       8,268,084 APPS         hwl33
+27216        520    1730    6769 INACTIVE       9,561,028       8,268,084 APPS         hwl33
+11636        524    2184    4391 INACTIVE       9,543,972       8,099,628 APPS         hwl33
+11636        524    2180   11537 INACTIVE       9,543,972       8,099,628 APPS         hwl33
+11636        524    2200    2963 INACTIVE       9,543,972       8,099,628 APPS         hwl33
+20517        375    1241    3417 INACTIVE       9,478,436       8,044,628 APPS         hwl33        JDBC Thin Client
+9435         526    2389   10549 INACTIVE       9,429,956       7,983,356 APPS         hwl33
+9435         526    2395    9811 INACTIVE       9,429,956       7,983,356 APPS         hwl33
+20389        455     786   12843 INACTIVE       9,429,956       8,563,940 APPS         hwl33
+20389        455     770    9795 INACTIVE       9,429,956       8,563,940 APPS         hwl33
+30935        398     685   11367 INACTIVE       9,429,956       8,400,596 APPS         hwl33        JDBC Thin Client
+9435         526    2403   20763 INACTIVE       9,429,956       7,983,356 APPS         hwl33
+7644         352    1736   16433 INACTIVE       9,412,900       7,670,068 APPS         hwl33        JDBC Thin Client
+23288        257     586   10715 INACTIVE       9,364,420       8,057,636 APPS         hwl33
+23288        257     553   58981 INACTIVE       9,364,420       8,057,636 APPS         hwl33
+23288        257     545   24453 INACTIVE       9,364,420       8,057,636 APPS         hwl33
+17913        272    2199   28749 INACTIVE       9,298,884       8,644,804 APPS         hwl33
+17913        272    2195   17285 INACTIVE       9,298,884       8,644,804 APPS         hwl33
+17913        272    2189    9011 INACTIVE       9,298,884       8,644,804 APPS         hwl33
+16410        452     444   27841 INACTIVE       9,281,828       8,268,412 APPS         hwl33
+16410        452     451    2911 INACTIVE       9,281,828       8,268,412 APPS         hwl33
+16410        452     477   43885 INACTIVE       9,281,828       8,268,412 APPS         hwl33
+12466        450     260   13959 INACTIVE       9,233,348       7,718,348 APPS         hwl33        JDBC Thin Client
+5508         354    1984   31109 INACTIVE       9,102,276       7,542,604 APPS         hwl33        JDBC Thin Client
+28233         69    1451   45863 INACTIVE       9,036,740       8,291,012 APPS         hwl33
+28233         69    1446   26847 INACTIVE       9,036,740       8,291,012 APPS         hwl33
+28233         69    1409     451 INACTIVE       9,036,740       8,291,012 APPS         hwl33
+15205        251    2959   34149 INACTIVE       8,774,596       7,257,412 APPS         hwl33        JDBC Thin Client
+24660        548    1747   14529 INACTIVE       8,757,540       6,717,356 APPS         hwl33        JDBC Thin Client
+23807        601    1442   27615 INACTIVE       8,692,004       7,471,836 APPS         hwl33
+23807        601    1426   26753 INACTIVE       8,692,004       7,471,836 APPS         hwl33
+32755        323    1665    9953 INACTIVE       8,643,524       7,186,580 APPS         hwl33        JDBC Thin Client
+31343        492    1731   12863 INACTIVE       8,643,524       7,455,204 APPS         hwl33        JDBC Thin Client
+26958        301    2272   11035 INACTIVE       8,643,524       7,137,828 APPS         hwl33
+26958        301    2289   16537 INACTIVE       8,643,524       7,137,828 APPS         hwl33
+2639         576    1749    9467 INACTIVE       8,626,468       7,431,252 APPS         hwl33
+27277        350    1551    4471 INACTIVE       8,626,468       7,685,524 APPS         hwl33
+2639         576    1757   17009 INACTIVE       8,626,468       7,431,252 APPS         hwl33
+27277        350    1538   21119 INACTIVE       8,626,468       7,685,524 APPS         hwl33
+17634         65     995    3423 INACTIVE       8,560,932       8,095,452 APPS         hwl33
+17634         65     981   57487 INACTIVE       8,560,932       8,095,452 APPS         hwl33
+17634         65    1019   11289 INACTIVE       8,560,932       8,095,452 APPS         hwl33
+27977        477     111   22771 INACTIVE       8,495,396       5,447,164 APPS         hwl33
+27977        477     147   12607 INACTIVE       8,495,396       5,447,164 APPS         hwl33
+31959        122    1105   10279 ACTIVE         8,446,916       6,319,502 APPS         hwl33
+21044        546    1546   42429 INACTIVE       8,429,860       8,033,756 APPS         hwl33
+21044        546    1519   13839 INACTIVE       8,429,860       8,033,756 APPS         hwl33
+21044        546    1528   15787 INACTIVE       8,429,860       8,033,756 APPS         hwl33
+31963        124    1319    7563 ACTIVE         8,381,380       6,392,270 APPS         hwl33
+30946        385    2313    6211 INACTIVE       8,364,324       7,741,396 APPS         hwl33
+30946        385    2314    2353 INACTIVE       8,364,324       7,741,396 APPS         hwl33
+26139        474    2826   35941 INACTIVE       8,315,844       7,085,532 APPS         hwl33
+26139        474    2823    5539 INACTIVE       8,315,844       7,085,532 APPS         hwl33
+25995        379    1626   40085 INACTIVE       8,298,788       6,399,068 APPS         hwl33
+25995        379    1661   20103 INACTIVE       8,298,788       6,399,068 APPS         hwl33
+9809         426     677    7735 INACTIVE       8,250,308       6,584,964 APPS         hwl33        JDBC Thin Client
+2870         580    2203   15301 INACTIVE       8,233,252       6,713,484 APPS         hwl33        JDBC Thin Client
+19844        550    1952    9331 INACTIVE       8,184,772       6,656,540 APPS         hwl33        JDBC Thin Client
+27969        479     365   13769 INACTIVE       8,184,772       6,877,044 APPS         hwl33        JDBC Thin Client
+29186         89     555   10549 INACTIVE       8,184,772       6,845,652 APPS         hwl33        JDBC Thin Client
+14420        440    2165    1413 INACTIVE       8,167,716       6,060,068 APPS         hwl33
+14420        440    2176   15571 INACTIVE       8,167,716       6,060,068 APPS         hwl33
+1291         402    1084    4747 INACTIVE       8,102,180       6,464,756 APPS         hwl33
+1291         402    1128    9499 INACTIVE       8,102,180       6,464,756 APPS         hwl33
+1375         383    2059   28943 INACTIVE       8,036,644       6,101,228 APPS         hwl33
+1375         383    2069   22619 INACTIVE       8,036,644       6,101,228 APPS         hwl33
+18210        616      13   16859 INACTIVE       7,988,164       6,501,476 APPS         hwl33        JDBC Thin Client
+14751        441    2276    1525 INACTIVE       7,922,628       4,624,620 APPS         hwl33
+2702         578    1974   14193 INACTIVE       7,922,628       6,516,412 APPS         hwl33        JDBC Thin Client
+11421        603    1639   24837 INACTIVE       7,922,628       6,698,012 APPS         hwl33        JDBC Thin Client
+14751        441    2282   12791 INACTIVE       7,922,628       4,624,620 APPS         hwl33
+8979         488    1343   16565 INACTIVE       7,905,572       6,619,060 APPS         hwl33
+7390          42    1541   58959 INACTIVE       7,905,572       6,996,036 APPS         hwl33
+7390          42    1533   14071 INACTIVE       7,905,572       6,996,036 APPS         hwl33
+30317        292    1342   37675 INACTIVE       7,905,572       6,347,868 APPS         hwl33
+8979         488    1329   10769 INACTIVE       7,905,572       6,619,060 APPS         hwl33
+30317        292    1326   15343 INACTIVE       7,905,572       6,347,868 APPS         hwl33
+30317        292    1302    3281 INACTIVE       7,905,572       6,347,868 APPS         hwl33
+2248         567     791   10861 INACTIVE       7,791,556       6,464,964 APPS         hwl33        JDBC Thin Client
+20972        593     552    9771 INACTIVE       7,774,500       6,025,100 APPS         hwl33
+20972        593     548    4987 INACTIVE       7,774,500       6,025,100 APPS         hwl33
+26052        464    1739   13507 INACTIVE       7,708,964       6,053,052 APPS         hwl33
+17004        584    2620   16855 INACTIVE       7,708,964       6,957,268 APPS         hwl33
+26052        464    1763   33957 INACTIVE       7,708,964       6,053,052 APPS         hwl33
+17004        584    2606   63751 INACTIVE       7,708,964       6,957,268 APPS         hwl33
+30921        384    2201   14535 INACTIVE       7,643,428       6,191,364 APPS         hwl33
+30921        384    2178    7989 INACTIVE       7,643,428       6,191,364 APPS         hwl33
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+29716        433    1432   23675 INACTIVE       7,643,428       5,053,444 APPS         hwl33
+29716        433    1414   16825 INACTIVE       7,643,428       5,053,444 APPS         hwl33
+1058         489    1420   11611 INACTIVE       7,594,948       7,124,964 APPS         hwl33
+1058         489    1408    4057 INACTIVE       7,594,948       7,124,964 APPS         hwl33
+5494         347    1224    3983 INACTIVE       7,577,892       6,095,372 APPS         hwl33
+5494         347    1199   27743 INACTIVE       7,577,892       6,095,372 APPS         hwl33
+29566        577    1863   33957 INACTIVE       7,577,892       6,122,060 APPS         hwl33
+29566        577    1852   16645 INACTIVE       7,577,892       6,122,060 APPS         hwl33
+13923        605    1844   63701 INACTIVE       7,512,356       6,051,556 APPS         hwl33
+13923        605    1856   48373 INACTIVE       7,512,356       6,051,556 APPS         hwl33
+13931        606    1993    5587 INACTIVE       7,463,876       5,616,212 APPS         hwl33
+13931        606    1994    2019 INACTIVE       7,463,876       5,616,212 APPS         hwl33
+19730        542    1121   14559 INACTIVE       7,446,820       6,303,204 APPS         hwl33
+5115         417    2728   22187 INACTIVE       7,446,820       5,940,028 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+28324        475    2947   40595 INACTIVE       7,446,820       7,115,140 APPS         hwl33
+19730        542    1130    6095 INACTIVE       7,446,820       6,303,204 APPS         hwl33
+28324        475    2931   11555 INACTIVE       7,446,820       7,115,140 APPS         hwl33
+24158        617     144   18749 INACTIVE       7,446,820       5,802,772 APPS         hwl33
+24158        617     146    8495 INACTIVE       7,446,820       5,802,772 APPS         hwl33
+5005         583    2511    7519 INACTIVE       7,398,340       6,464,252 APPS         hwl33
+14744        259     784   43935 INACTIVE       7,398,340       6,160,908 APPS         hwl33
+14744        259     794    5925 INACTIVE       7,398,340       6,160,908 APPS         hwl33
+26938        571    1232    8049 INACTIVE       7,398,340       6,201,700 APPS         hwl33
+26938        571    1237   17713 INACTIVE       7,398,340       6,201,700 APPS         hwl33
+5005         583    2493   24065 INACTIVE       7,398,340       6,464,252 APPS         hwl33
+3920         416    2611   10045 INACTIVE       7,381,284       5,686,652 APPS         hwl33
+22741        154    1549   10561 INACTIVE       7,381,284       6,981,724 APPS         hwl33
+22741        154    1537    9717 INACTIVE       7,381,284       6,981,724 APPS         hwl33
+24978        561     148    1891 INACTIVE       7,381,284       6,000,212 APPS         hwl33
+24978        561     126   10115 INACTIVE       7,381,284       6,000,212 APPS         hwl33
+3920         416    2643    5513 INACTIVE       7,381,284       5,686,652 APPS         hwl33
+29188         90     674    7801 INACTIVE       7,332,804       5,907,476 APPS         hwl33        JDBC Thin Client
+11379        598    1113   38869 INACTIVE       7,315,748       5,972,380 APPS         hwl33
+8553         518    1531   14245 INACTIVE       7,315,748       5,884,172 APPS         hwl33
+11379        598    1094    4427 INACTIVE       7,315,748       5,972,380 APPS         hwl33
+8553         518    1562   12867 INACTIVE       7,315,748       5,884,172 APPS         hwl33
+6644         514    1123   11595 INACTIVE       7,315,748       6,863,420 APPS         hwl33
+6644         514    1093   28537 INACTIVE       7,315,748       6,863,420 APPS         hwl33
+15812        511     766    3347 INACTIVE       7,267,268       5,837,812 APPS         hwl33        JDBC Thin Client
+20069        461    1417    7425 INACTIVE       7,250,212       6,722,300 APPS         hwl33
+20069        461    1440   64865 INACTIVE       7,250,212       6,722,300 APPS         hwl33
+12179        448      14   20641 INACTIVE       7,201,732       3,576,536 APPS         hwl33
+5454         581    2307    7051 INACTIVE       7,201,732       5,430,620 APPS         hwl33
+12179        448      31   28729 INACTIVE       7,201,732       3,576,536 APPS         hwl33
+5454         581    2291    7795 INACTIVE       7,201,732       5,430,620 APPS         hwl33
+20943        519    1637   10705 INACTIVE       7,184,676       6,155,468 APPS         hwl33
+20943        519    1658   15521 INACTIVE       7,184,676       6,155,468 APPS         hwl33
+7426         582    2390   18661 INACTIVE       7,119,140       5,137,132 APPS         hwl33
+11755        532      40   10195 INACTIVE       7,119,140       6,187,116 APPS         hwl33
+11755        532       5    2889 INACTIVE       7,119,140       6,187,116 APPS         hwl33
+7426         582    2428    4567 INACTIVE       7,119,140       5,137,132 APPS         hwl33
+22285        555    2521    7233 INACTIVE       7,119,140       6,419,908 APPS         hwl33
+22285        555    2522   15689 INACTIVE       7,119,140       6,419,908 APPS         hwl33
+26915        570    1086   36181 INACTIVE       7,053,604       6,531,044 APPS         hwl33
+26915        570    1088   34033 INACTIVE       7,053,604       6,531,044 APPS         hwl33
+26922        544    1307    8317 INACTIVE       7,053,604       5,613,052 APPS         hwl33
+26922        544    1346    8189 INACTIVE       7,053,604       5,613,052 APPS         hwl33
+25448        447    2930   20835 INACTIVE       7,053,604       5,177,964 APPS         hwl33
+25448        447    2953   42923 INACTIVE       7,053,604       5,177,964 APPS         hwl33
+22864        463    1635   13237 INACTIVE       6,988,068       6,560,708 APPS         hwl33
+22881        288     885   14603 INACTIVE       6,988,068       4,624,540 APPS         hwl33
+22864        463    1657   23671 INACTIVE       6,988,068       6,560,708 APPS         hwl33
+22881        288     899   11845 INACTIVE       6,988,068       4,624,540 APPS         hwl33
+2590         575    1625   26201 INACTIVE       6,922,532       5,883,188 APPS         hwl33
+2590         575    1650   24027 INACTIVE       6,922,532       5,883,188 APPS         hwl33
+28288        437    1881    9275 INACTIVE       6,922,532       5,883,188 APPS         hwl33
+15106        445    2719   12657 INACTIVE       6,922,532       4,403,420 APPS         hwl33
+15106        445    2706   28915 INACTIVE       6,922,532       4,403,420 APPS         hwl33
+28288        437    1879    9189 INACTIVE       6,922,532       5,883,188 APPS         hwl33
+26172        629    1425    7111 INACTIVE       6,856,996       5,691,300 APPS         hwl33
+26172        629    1407     307 INACTIVE       6,856,996       5,691,300 APPS         hwl33
+6602         508     465   12667 INACTIVE       6,677,444       5,630,716 APPS         hwl33
+26905        115     364   20461 INACTIVE       6,677,444       3,551,350 APPS         hwl33
+6602         508     450   18921 INACTIVE       6,677,444       5,630,716 APPS         hwl33
+26905        115     371   20307 INACTIVE       6,677,444       3,551,350 APPS         hwl33
+6978         222    2811   28419 INACTIVE       6,660,388       6,115,308 APPS         hwl33
+6978         222    2847    8367 INACTIVE       6,660,388       6,115,308 APPS         hwl33
+16256        681    1010    9633 INACTIVE       6,546,372       5,127,652 APPS         hwl33        JDBC Thin Client
+7948         365     118   16721 INACTIVE       6,529,316       6,266,676 APPS         hwl33
+7948         365     154   13099 INACTIVE       6,529,316       6,266,676 APPS         hwl33
+11764        534     236   14397 INACTIVE       6,480,836       4,626,652 APPS         hwl33
+11764        534     264    6443 INACTIVE       6,480,836       4,626,652 APPS         hwl33
+32493        533     114    1667 INACTIVE       6,480,836       5,943,092 APPS         hwl33
+32493        533     116   20375 INACTIVE       6,480,836       5,943,092 APPS         hwl33
+26230        604    1756    9393 INACTIVE       6,332,708       4,648,764 APPS         hwl33
+26230        604    1761   11329 INACTIVE       6,332,708       4,648,764 APPS         hwl33
+7364         432    1301    4681 INACTIVE       6,284,228       4,823,372 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+10672        266    1516   45963 INACTIVE       6,267,172       4,683,980 APPS         hwl33
+10672        266    1520   29009 INACTIVE       6,267,172       4,683,980 APPS         hwl33
+3688          32     434      27 INACTIVE       6,218,692       3,313,742 DBSNMP       hwl33        emagent@dblxp03.hwl-
+                                                                                                    ebis.com (TNS V1-V3)
+
+12805        370     678   16329 INACTIVE       6,070,564       5,106,332 APPS         hwl33        JDBC Thin Client
+6589         507     330   20705 INACTIVE       6,005,028       2,653,492 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+10870        586    2843    9297 INACTIVE       5,939,492       4,830,844 APPS         hwl33
+10870        586    2854   25419 INACTIVE       5,939,492       4,830,844 APPS         hwl33
+31955        120     868    5549 ACTIVE         5,891,012       4,245,494 APPS         hwl33
+26151        626    1103   22581 INACTIVE       5,873,956       5,621,164 APPS         hwl33
+26151        626    1085   17087 INACTIVE       5,873,956       5,621,164 APPS         hwl33
+8234         540     891   10705 INACTIVE       5,873,956       4,813,076 APPS         hwl33
+8234         540     890    8707 INACTIVE       5,873,956       4,813,076 APPS         hwl33
+17849        457    1012   34027 INACTIVE       5,808,420       5,082,140 APPS         hwl33
+17849        457     975   26231 INACTIVE       5,808,420       5,082,140 APPS         hwl33
+5163         424     474   36583 INACTIVE       5,742,884       5,327,036 APPS         hwl33
+5163         424     468   21491 INACTIVE       5,742,884       5,327,036 APPS         hwl33
+31347        493    1860   34041 INACTIVE       5,694,404       5,040,004 APPS         hwl33        JDBC Thin Client
+27181        624     909   11699 INACTIVE       5,677,348       5,027,380 APPS         hwl33
+20970        545    1436   10261 INACTIVE       5,677,348       5,092,892 APPS         hwl33
+5541         588       9     535 INACTIVE       5,677,348       5,092,892 APPS         hwl33
+20970        545    1419    8033 INACTIVE       5,677,348       5,092,892 APPS         hwl33
+20042        460    1337    6845 INACTIVE       5,677,348       5,027,380 APPS         hwl33
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+20042        460    1317   15111 INACTIVE       5,677,348       5,027,380 APPS         hwl33
+27181        624     887    6697 INACTIVE       5,677,348       5,027,380 APPS         hwl33
+17044        599    1223   20495 ACTIVE         5,677,348       5,127,308 APPS         hwl33
+5541         588      17    8911 INACTIVE       5,677,348       5,092,892 APPS         hwl33
+31957        121    1004    5887 ACTIVE         5,628,868       4,223,470 APPS         hwl33
+31953        119     776    7541 ACTIVE         5,628,868       4,255,382 APPS         hwl33
+14194        602    1559   20887 INACTIVE       5,611,812       4,944,468 APPS         hwl33
+14194        602    1543   11217 INACTIVE       5,611,812       4,944,468 APPS         hwl33
+11757        530    2828    7665 INACTIVE       5,480,740       4,002,996 APPS         hwl33
+11757        530    2852   40513 INACTIVE       5,480,740       4,002,996 APPS         hwl33
+27199        547    1651   23545 ACTIVE         5,432,260       2,445,052 APPS         hwl33
+32147        562     261   13305 INACTIVE       5,432,260       4,769,444 APPS         hwl33
+32147        562     222    1733 INACTIVE       5,432,260       4,769,444 APPS         hwl33
+26165        557    2741   23335 INACTIVE       5,415,204       4,526,700 APPS         hwl33
+26165        557    2705    6169 INACTIVE       5,415,204       4,526,700 APPS         hwl33
+26174        390    2821   20155 INACTIVE       5,366,724       4,918,028 APPS         hwl33
+26174        390    2839    9363 INACTIVE       5,366,724       4,918,028 APPS         hwl33
+17535        322    1527   12015 INACTIVE       5,349,668       4,765,332 APPS         hwl33
+17535        322    1515   32089 INACTIVE       5,349,668       4,765,332 APPS         hwl33
+7430         591     360   12213 INACTIVE       5,284,132       4,765,332 APPS         hwl33
+24153        487    1229   15061 INACTIVE       5,284,132       4,577,780 APPS         hwl33
+24153        487    1228    8233 INACTIVE       5,284,132       4,577,780 APPS         hwl33
+7430         591     342   18343 INACTIVE       5,284,132       4,765,332 APPS         hwl33
+29667        100    1737    2235 INACTIVE       5,235,652       3,832,518 APPS         hwl33
+21780        337     136    9137 INACTIVE       5,235,652       3,807,438 APPS         hwl33        JDBC Thin Client
+24541        565     547   25363 INACTIVE       5,218,596       4,714,788 APPS         hwl33
+24541        565     574   29581 INACTIVE       5,218,596       4,714,788 APPS         hwl33
+2687         394     226   12173 INACTIVE       5,153,060       4,304,724 APPS         hwl33
+2687         394     250   23527 INACTIVE       5,153,060       4,304,724 APPS         hwl33
+26589        622     667    7687 ACTIVE         5,087,524       4,097,516 APPS         hwl33
+11302        594     693    4827 INACTIVE       5,039,044       4,282,508 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+20895        471    2509   34897 INACTIVE       5,021,988       4,465,972 APPS         hwl33
+20895        471    2512   20863 INACTIVE       5,021,988       4,465,972 APPS         hwl33
+26902        569    1008   34885 INACTIVE       4,907,972       3,721,292 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+32007        145     550     587 INACTIVE       4,907,972       3,231,694 APPS         hwl33
+25222         39    1189       3 ACTIVE         4,842,436       2,412,940              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (Q003)
+
+32229        274    2415   16793 INACTIVE       4,776,900       3,138,350 APPS         hwl33
+32239        281     156    2387 INACTIVE       4,776,900       3,138,350 APPS         hwl33
+32174        242    1986   17621 INACTIVE       4,776,900       3,204,582 APPS         hwl33        JDBC Thin Client
+31991        138    2827    8579 INACTIVE       4,776,900       3,100,670 APPS         hwl33
+31985        135    2523   12433 INACTIVE       4,711,364       3,035,222 APPS         hwl33
+32086        198     253    1567 INACTIVE       4,711,364       3,245,726 APPS         hwl33        JDBC Thin Client
+31987        136    2644    7135 INACTIVE       4,711,364       3,039,230 APPS         hwl33
+31223        289     976   34561 INACTIVE       4,694,308       3,446,636 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+32017        151    1227    9393 INACTIVE       4,645,828       2,969,646 APPS         hwl33
+32213        264    1351    4823 INACTIVE       4,645,828       2,966,414 APPS         hwl33
+32038        175     790   10481 INACTIVE       4,645,828       2,969,422 APPS         hwl33
+32219        261    1002   10757 INACTIVE       4,645,828       2,973,750 APPS         hwl33
+32005        144     435   16075 INACTIVE       4,645,828       3,035,158 APPS         hwl33
+32031        172     443   17987 INACTIVE       4,645,828       2,969,710 APPS         hwl33
+32034        173     572    7309 INACTIVE       4,645,828       2,969,710 APPS         hwl33
+32231        276    2623   10591 INACTIVE       4,645,828       2,966,446 APPS         hwl33
+2238         137    2735   20645 INACTIVE       4,645,828       2,963,086 APPS         hwl33
+32025        167    2925    1501 INACTIVE       4,645,828       2,969,646 APPS         hwl33
+32021        161    2306    8771 INACTIVE       4,645,828       2,969,422 APPS         hwl33
+32023        162    2429    5519 INACTIVE       4,645,828       2,969,710 APPS         hwl33
+11587        366     229   21555 INACTIVE       4,628,772       1,326,260 APPS         hwl33
+32249        287     778    7873 INACTIVE       4,580,292       2,900,902 APPS         hwl33
+32029        171     353    6231 INACTIVE       4,580,292       2,904,134 APPS         hwl33
+25688         33     542      19 ACTIVE         4,580,292       2,742,550 DBSNMP       hwl33        emagent@dblxp03.hwl-
+                                                                                                    ebis.com (TNS V1-V3)
+
+21884        235    1195     223 INACTIVE       4,580,292       2,937,966 APPS         hwl33
+32225        273    2312   13991 INACTIVE       4,580,292       2,900,902 APPS         hwl33
+31983        134    2406   14343 INACTIVE       4,580,292       2,969,710 APPS         hwl33
+32221        271    2055     327 INACTIVE       4,580,292       2,966,414 APPS         hwl33
+32009        146     655    7265 INACTIVE       4,580,292       2,969,646 APPS         hwl33
+8213         592     436    3137 INACTIVE       4,563,236       3,111,836 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+32223        265    1416    6999 INACTIVE       4,514,756       2,835,390 APPS         hwl33
+32011        147     780   10589 INACTIVE       4,514,756       2,875,686 APPS         hwl33
+32040        176     884    8351 INACTIVE       4,514,756       2,838,398 APPS         hwl33
+32211        260     894   36025 INACTIVE       4,514,756       2,900,934 APPS         hwl33
+32003        143     361    4739 INACTIVE       4,514,756       2,941,198 APPS         hwl33
+32015        150    1100   16191 INACTIVE       4,514,756       2,838,334 APPS         hwl33
+32000        142     242   13859 INACTIVE       4,514,756       2,838,622 APPS         hwl33
+32237        278    2813      93 INACTIVE       4,514,756       2,900,934 APPS         hwl33
+32235        279    2942    7383 INACTIVE       4,514,756       2,900,902 APPS         hwl33
+32215        267    1642   16131 INACTIVE       4,514,756       2,835,390 APPS         hwl33
+32044        178    1089     185 INACTIVE       4,514,756       2,838,622 APPS         hwl33
+32241        282     228     629 INACTIVE       4,514,756       2,835,390 APPS         hwl33
+10285        187    2092   30965 INACTIVE       4,497,700       2,797,004 APPS         hwl33
+7765         105    2293   18783 INACTIVE       4,497,700       3,196,836 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+27174        640    2632   11977 ACTIVE         4,449,220       4,146,236 APPS         hwl33
+9804         236    1327   23855 INACTIVE       4,432,164       2,582,076 APPS         hwl33
+32082        196       3     689 INACTIVE       4,383,684       3,039,878 APPS         hwl33        JDBC Thin Client
+30378        291    1219   38017 INACTIVE       4,383,684       2,330,748 APPS         LIJIN        dis51usr.exe
+19829        549    1864    9253 INACTIVE       4,383,684       2,985,740 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+32062        185    1855   15899 INACTIVE       4,383,684       2,745,310 APPS         hwl33
+16382        319    1245    5603 INACTIVE       4,366,628       2,907,108 APPS         hwl33
+9364          68    1306   10007 INACTIVE       4,366,628       2,701,948 APPS         hwl33
+25542        355    2083   45887 INACTIVE       4,366,628       2,724,468 APPS         hwl33
+24498         82    2844   21751 INACTIVE       4,366,628       3,213,700 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+12169        220    2599   44309 INACTIVE       4,366,628       2,183,436 APPS         hwl33
+1435          34     665    8163 INACTIVE       4,366,628       2,967,516 APPS         hwl33
+32027        170     223     485 INACTIVE       4,318,148       2,928,286 APPS         hwl33
+20038        459    1192   10911 INACTIVE       4,318,148       2,165,780 APPS         hwl33
+23809        486    1107   13759 INACTIVE       4,318,148       2,752,092 APPS         hwl33
+2594         573    1428   40891 INACTIVE       4,301,092       2,643,028 APPS         hwl33
+15091         37     998   19513 INACTIVE       4,301,092       2,710,572 APPS         hwl33
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+26025        454     654    6809 INACTIVE       4,301,092       2,371,732 APPS         hwl33
+14117        522    1982   14087 INACTIVE       4,301,092       2,608,180 APPS         hwl33
+3359         329    2316    9583 INACTIVE       4,301,092       2,760,452 APPS         hwl33
+12160        442    2402    7573 INACTIVE       4,301,092       2,999,716 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+14664         24    2604   15141 INACTIVE       4,301,092       2,705,180 APPS         hwl33
+22278        556    2631   14047 INACTIVE       4,301,092       2,522,220 APPS         hwl33
+23329        258     696   18393 INACTIVE       4,252,612       2,974,084 APPS         MFN042184    dis51usr.exe
+31996        140       6     187 INACTIVE       4,252,612       2,969,646 APPS         hwl33
+32094        193    2721    5621 INACTIVE       4,252,612       2,567,238 APPS         hwl33        JDBC Thin Client
+32217        263    1211    3353 INACTIVE       4,252,612       2,932,614 APPS         hwl33
+2291         306    2814    1165 INACTIVE       4,252,612       2,659,870 APPS         hwl33        JDBC Thin Client
+32019        158    1953    7949 INACTIVE       4,252,612       2,941,198 APPS         hwl33
+32227        268    1755    5573 INACTIVE       4,252,612       2,908,206 APPS         hwl33
+32233        277    2747     199 INACTIVE       4,252,612       2,966,414 APPS         hwl33
+9832         415    2520   22957 INACTIVE       4,235,556       2,262,012 APPS         hwl33
+31294         53    2730   12059 INACTIVE       4,235,556       2,645,060 APPS         hwl33
+11879        568     913    4407 INACTIVE       4,187,076       3,188,870 APPS         hwl33        JDBC Thin Client
+17662        395     346   31625 INACTIVE       4,187,076       2,686,820 APPS         hwl33
+32245        283     356    6165 INACTIVE       4,187,076       2,925,278 APPS         hwl33
+32247        284     472    3091 INACTIVE       4,187,076       2,900,934 APPS         hwl33
+32243        280      34    5527 INACTIVE       4,187,076       3,031,926 APPS         hwl33
+32108        207    1197     697 INACTIVE       4,187,076       2,573,054 APPS         hwl33
+31993        139    2941   11495 INACTIVE       4,187,076       2,862,998 APPS         hwl33
+32124        214    1959     773 INACTIVE       4,187,076       2,573,086 APPS         hwl33
+32305        294    1550    4749 INACTIVE       4,187,076       2,664,798 APPS         hwl33        JDBC Thin Client
+32116        211    1632    6581 INACTIVE       4,187,076       2,518,910 APPS         hwl33
+32120        212    1773    9041 INACTIVE       4,187,076       2,518,910 APPS         hwl33
+25409        473    2731   14947 INACTIVE       4,187,076       2,978,036 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+24281         22    2377       1 ACTIVE         4,178,388       2,149,396              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (MMON)
+
+7594         328    2190    6259 INACTIVE       4,170,020       2,906,140 APPS         hwl33        JDBC Thin Client
+32110        208    1303    1549 INACTIVE       4,121,540       2,490,462 APPS         hwl33
+32042        177     985   12091 INACTIVE       4,121,540       2,773,174 APPS         hwl33
+2313         304    2596      85 ACTIVE         4,121,540       2,753,134 APPS         hwl33        JDBC Thin Client
+32106        206    1112   11171 INACTIVE       4,121,540       2,479,094 APPS         hwl33
+32126        216    2173   23155 INACTIVE       4,121,540       2,507,574 APPS         hwl33
+32114        210    1518    7643 INACTIVE       4,121,540       2,490,462 APPS         hwl33
+27068         74    1967   10227 INACTIVE       4,121,540       2,056,100 APPS         MFN038001    dis51usr.exe
+4424          56      26   15269 INACTIVE       4,104,484       2,705,180 APPS         hwl33
+12167         58     233   40205 INACTIVE       4,104,484       2,950,532 APPS         hwl33
+4474         421     130   11103 INACTIVE       4,104,484       2,587,452 APPS         hwl33
+27138        625    1018   31577 INACTIVE       4,056,004       2,713,212 APPS         hwl33
+30944        453     591   14541 INACTIVE       4,056,004       2,721,980 APPS         hwl33
+22179        397     593    7183 INACTIVE       4,056,004       2,806,942 APPS         hwl33
+22951        262    1131   10979 INACTIVE       4,056,004       2,688,212 APPS         kevin        GLDI9032.EXE
+32128        217    2305   30537 INACTIVE       4,056,004       2,490,462 APPS         hwl33
+25597        303    2514   11873 INACTIVE       4,056,004       2,540,364 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+31967        126    1563    3487 INACTIVE       4,056,004       2,184,054 APPS         hwl33
+32036        174     663   10207 INACTIVE       4,056,004       2,772,886 APPS         hwl33
+10808        574    1565    7657 INACTIVE       4,038,948       2,716,548 APPS         hwl33
+20953        607    2060    4603 INACTIVE       4,038,948       2,710,844 APPS         hwl33
+32066        188    2191   19749 INACTIVE       3,990,468       2,348,358 APPS         hwl33
+32058        131    2098    2523 INACTIVE       3,990,468       2,351,366 APPS         hwl33
+32068        189    2290    5667 INACTIVE       3,990,468       2,348,358 APPS         hwl33
+32052        182    1525    8379 INACTIVE       3,990,468       2,682,998 APPS         hwl33
+32070        190    2411    8663 INACTIVE       3,990,468       2,613,998 APPS         hwl33
+2317         309     112    1441 INACTIVE       3,924,932       2,365,358 APPS         hwl33        JDBC Thin Client
+16903        326    1949   19203 INACTIVE       3,924,932       2,701,284 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+32050        181    1448    7911 INACTIVE       3,859,396       2,405,246 APPS         hwl33        JDBC Thin Client
+2321         310     227    1111 INACTIVE       3,859,396       2,374,766 APPS         hwl33        JDBC Thin Client
+32160        233     987   13229 ACTIVE         3,859,396       2,617,606 APPS         hwl33        JDBC Thin Client
+32104        205    1024   25383 INACTIVE       3,859,396       2,507,542 APPS         hwl33
+11771        443    2518   15321 INACTIVE       3,842,340       2,707,324 APPS         hwl33
+32118        186    1972    7393 INACTIVE       3,793,860       2,479,094 APPS         hwl33
+32130        219    2503   18067 INACTIVE       3,793,860       2,466,406 APPS         hwl33
+24145         46    1962   31731 INACTIVE       3,776,804       2,650,068 APPS         hwl33
+23685         57     151    7005 INACTIVE       3,776,804       2,650,068 APPS         hwl33
+16386        427     785   26855 INACTIVE       3,776,804       2,710,572 APPS         hwl33
+19770         73    1854   48935 INACTIVE       3,776,804       3,078,284 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+32054        183    1648   15441 INACTIVE       3,728,324       2,351,590 APPS         hwl33
+32080        195    2964    7531 INACTIVE       3,728,324       2,089,254 APPS         hwl33
+8844         512     903   11121 INACTIVE       3,728,324       2,471,148 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+32048        180    1316   10513 INACTIVE       3,728,324       2,413,870 APPS         hwl33
+2660         169     141   15901 INACTIVE       3,728,324       2,510,676 APPS         WaiCheng
+16944        103    2096    4867 INACTIVE       3,728,324       3,201,078 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+32204        497    2273    3421 INACTIVE       3,728,324       2,399,004 APPS         luise.luo
+32084        197     120    8205 INACTIVE       3,728,324       2,089,318 APPS         hwl33
+15088         86     239    9885 INACTIVE       3,711,268       3,401,124 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+14680         96    1309   16023 INACTIVE       3,711,268       3,256,948 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+7517         232     904   37655 INACTIVE       3,711,268       3,399,900 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+26911        635    2076   14069 INACTIVE       3,662,788       2,460,508 APPS         Daniel?Yao
+16858        538     681    6033 INACTIVE       3,662,788       2,354,316 APPS         jessie.deng
+32060        184    1762    7299 INACTIVE       3,662,788       2,335,702 APPS         hwl33
+31973        129    1849   18781 INACTIVE       3,662,788       2,024,030 APPS         hwl33
+31981        133    2277     631 INACTIVE       3,662,788       2,023,806 APPS         hwl33
+32092        200     478    8339 INACTIVE       3,662,788       2,023,742 APPS         hwl33
+32056        130    1954   11319 INACTIVE       3,662,788       2,338,966 APPS         hwl33
+24980        254     220   31109 INACTIVE       3,645,732       3,254,572 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+
+32699        299    2081   14409 INACTIVE       3,645,732       2,250,324 APPS         hwl33        JDBC Thin Client
+5546         353    1873   62709 INACTIVE       3,645,732       3,266,572 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+1451          50    2420    9311 INACTIVE       3,597,252       2,413,324 APPS         joannelo
+18535        250    2831   44815 INACTIVE       3,597,252       2,354,308 APPS         StevenLiang
+2998         307    2957   25865 INACTIVE       3,597,252       2,314,148 APPS         SIOWBING
+3796         504      43    6031 INACTIVE       3,597,252       2,314,148 APPS         shierleyting
+1307         403    1206    8313 INACTIVE       3,597,252       2,113,748 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+3998         418    2812   17207 INACTIVE       3,597,252       2,354,308 APPS         wangry
+14418         77    2274    5821 INACTIVE       3,597,252       2,354,308 APPS         JohnsonW
+26980        224      24   32195 INACTIVE       3,580,196       3,265,708 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+20271        255     344   14249 INACTIVE       3,580,196       3,196,940 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+7651         234    1120   48919 INACTIVE       3,580,196       3,269,804 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+1943         411    2094   11185 INACTIVE       3,580,196       1,986,588 APPS         MFN063793    dis51usr.exe
+22840        156    1766   27263 INACTIVE       3,531,716       2,320,652 APPS         jh.lu
+3344         324    1779   36499 INACTIVE       3,531,716       2,314,156 APPS         SIEW
+22420        458    1129   20611 INACTIVE       3,531,716       2,320,652 APPS         zm
+28219        321    1421   10403 INACTIVE       3,531,716       2,347,820 APPS         JFN318862
+28217        148     906   10561 INACTIVE       3,531,716       2,314,156 APPS         evayee
+31063        484     911    7633 INACTIVE       3,531,716       2,305,852 APPS         may.lei
+12728         61     584   56197 INACTIVE       3,531,716       2,326,652 APPS         fion.li
+6648         510     653    2149 INACTIVE       3,531,716       2,363,700 APPS         Ann.Zhuo
+8302         168      42   15347 INACTIVE       3,531,716       2,314,156 APPS         SIEWLI
+24996        253     125   19131 INACTIVE       3,531,716       2,354,316 APPS         lixiao
+2297         305    2708    1351 INACTIVE       3,531,716       3,092,966 APPS         hwl33        JDBC Thin Client
+21000        110    2856   23781 INACTIVE       3,531,716       2,317,404 APPS         dr95
+7388         413    2302   25427 INACTIVE       3,531,716       2,459,628 APPS         ShirleyK
+11034        521    1885   32721 INACTIVE       3,531,716       2,413,348 APPS         jevonc
+27201        579    2065   28983 INACTIVE       3,531,716       2,100,228 APPS         MFN606760
+26953        636    2164    8239 INACTIVE       3,531,716       2,354,332 APPS         ying.ou
+10181        237    1435   63971 INACTIVE       3,531,716       2,459,628 APPS         IrisNG
+31204         99    1634   23057 INACTIVE       3,514,660       1,845,076 APPS         mfn032641    dis51usr.exe
+15472        228     449   39401 INACTIVE       3,466,180       2,314,164 APPS         idac
+9036         523    2091   10815 INACTIVE       3,466,180       2,419,828 APPS         tao.peng
+10641        227     363   51333 INACTIVE       3,466,180       2,462,876 APPS         yz.xu
+23803        618     263    6817 INACTIVE       3,466,180       2,402,388 APPS         GillianF
+31965        125    1431    5903 INACTIVE       3,466,180       2,074,078 APPS         hwl33
+16380        539     764    8935 INACTIVE       3,466,180       2,402,388 APPS         ChungC
+18004        608    2171   15571 INACTIVE       3,466,180       2,282,324 APPS         yuwen        GLDI9032.EXE
+3899         480     458   21003 INACTIVE       3,466,180       2,462,876 APPS         sx.chen
+19016        141     110   28469 INACTIVE       3,466,180       2,462,876 APPS         anna.chen
+10082        368     437      37 INACTIVE       3,449,124       1,955,364 APPS         hwl33
+27586        315     807    7827 INACTIVE       3,449,124       3,135,548 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+12057        399     772   17693 INACTIVE       3,449,124       1,946,620 APPS         MFN620605    dis51usr.exe
+24976        566     698    2541 INACTIVE       3,449,124       2,205,844 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+5502         348    1300    1731 INACTIVE       3,449,124       3,200,196 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+5486         346    1102   21335 INACTIVE       3,449,124       3,119,164 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+3261         332    2607   34823 INACTIVE       3,449,124       3,204,292 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+25258        275    2505   28909 INACTIVE       3,449,124       3,201,052 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+17148        111    2934   17387 INACTIVE       3,449,124       3,122,388 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+5496         334    2861   31961 INACTIVE       3,449,124       3,200,196 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+20797        613    2716    4673 INACTIVE       3,449,124       1,854,420 APPS         MFN041846    dis51usr.exe
+7934         165    2704   19323 INACTIVE       3,449,124       3,201,060 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+6555         501    2702   13779 INACTIVE       3,449,124       1,854,724 APPS         yangxm       dis51usr.exe
+30954        478     246    9819 INACTIVE       3,449,124       2,205,844 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+5484         342     650   12513 INACTIVE       3,449,124       3,134,684 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+32706        297    1857   29985 INACTIVE       3,400,644       2,762,836 APPS         hwl33        JDBC Thin Client
+9406          48    2167   14003 INACTIVE       3,400,644       2,354,308 APPS         Daniel?Yao
+31019        482     664   11709 INACTIVE       3,400,644       2,212,236 APPS         yangxm       dis51usr.exe
+29195         80    2633    6293 INACTIVE       3,400,644       2,191,206 APPS         dick.chen
+26225        600    1313    8889 INACTIVE       3,400,644       2,354,324 APPS         shy
+31945        117     544     851 INACTIVE       3,400,644       1,928,326 APPS         hwl33           ?  @applxp01.hwl-
+                                                                                                    ebis.com (TNS V1-V3)
+
+32320        295    1641     285 INACTIVE       3,400,644       2,451,782 APPS         hwl33        JDBC Thin Client
+32072        191    2504    8969 INACTIVE       3,400,644       2,076,566 APPS         hwl33
+24553        554    2399    5779 INACTIVE       3,400,644       2,314,148 APPS         irenelin
+31951        118     671   12085 INACTIVE       3,383,588       1,956,228 APPS         hwl33
+312           72    1776   25761 INACTIVE       3,383,588       3,122,412 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+27503        106    2400   19237 INACTIVE       3,383,588       3,119,164 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+28639        382    1996    3585 INACTIVE       3,383,588       1,854,436 APPS         MFN023352    dis51usr.exe
+30651        318    1111   20667 INACTIVE       3,383,588       3,052,788 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+10232        152    1324   42219 INACTIVE       3,383,588       3,134,684 APPS         hwl33        /project/PHWL33/PHWL
+                                                                                                    33ora/iAS/Apache/Apa
+                                                                                                    che/bin/
+
+32088        199     341   19947 INACTIVE       3,335,108       2,011,054 APPS         hwl33
+30875        388    2642    3513 INACTIVE       3,335,108       2,305,860 APPS         jing.zhou
+32697        298    1957   16237 INACTIVE       3,335,108       2,391,534 APPS         hwl33        JDBC Thin Client
+31979        132    2193    6337 INACTIVE       3,335,108       2,023,742 APPS         hwl33
+32090        192    2602     487 INACTIVE       3,335,108       2,023,742 APPS         hwl33
+31971        128    1740    8057 INACTIVE       3,335,108       2,011,054 APPS         hwl33
+23005        349    1444    8983 INACTIVE       3,335,108       2,240,790 APPS         hwl33        JDBC Thin Client
+31969        127    1636    6365 INACTIVE       3,335,108       2,023,742 APPS         hwl33
+32134        221    2744    8135 INACTIVE       3,335,108       2,576,334 APPS         hwl33        JDBC Thin Client
+9426         408    1735   54573 INACTIVE       3,318,052       1,786,668 APPS         MFN626963    dis51usr.exe
+16981        213    1853   40693 INACTIVE       3,318,052       2,238,900 APPS         hwl33
+973          400     902    5633 INACTIVE       3,318,052       1,867,332 APPS         MFN323781    dis51usr.exe
+24559        559    2951   26335 INACTIVE       3,269,572       2,100,236 APPS         irenelin
+22911        472    2640    4297 INACTIVE       3,269,572       2,106,732 APPS         jh.lu
+3263         333    2709   27799 INACTIVE       3,269,572       2,100,236 APPS         SIOWBING
+15474        361    2717   53939 INACTIVE       3,269,572       2,100,236 APPS         idac
+30877        389    2726   24991 INACTIVE       3,269,572       2,106,732 APPS         jing.zhou
+14441        531    2919    7003 INACTIVE       3,269,572       2,106,732 APPS         JohnsonW
+3834         503    2949   14947 INACTIVE       3,269,572       2,100,236 APPS         shierleyting
+2764         223    2950    6881 INACTIVE       3,269,572       2,100,236 APPS         WaiCheng
+32132        218    2385     821 INACTIVE       3,269,572       1,820,230 APPS         hwl33
+3357         330    2388   15335 INACTIVE       3,269,572       2,100,236 APPS         SIEW
+8309         358    2393   33657 INACTIVE       3,269,572       2,100,236 APPS         SIEWLI
+29254        751    2500    3675 INACTIVE       3,269,572       2,106,732 APPS         dick.chen
+10906        527    2507   24143 INACTIVE       3,269,572       2,106,732 APPS         Daniel?Yao
+19065        387    2508   15339 INACTIVE       3,269,572       2,106,732 APPS         jessie.deng
+19988        612    2593    8467 INACTIVE       3,269,572       2,100,236 APPS         yuwen        ADIQC32.EXE
+1454         495    2066   19663 INACTIVE       3,269,572       2,100,236 APPS         joannelo
+22697        467    2074   18811 INACTIVE       3,269,572       2,106,732 APPS         zm
+10193        244    2175   13453 INACTIVE       3,269,572       2,100,236 APPS         IrisNG
+31328        490    1552    6245 INACTIVE       3,269,572       2,106,732 APPS         may.lei
+32176        239    1630   13733 INACTIVE       3,269,572       2,484,214 APPS         hwl33        JDBC Thin Client
+26232        631    1656    7067 INACTIVE       3,269,572       2,106,732 APPS         shy
+27900        632    1742   14921 INACTIVE       3,269,572       2,100,236 APPS         MFN606760
+12824        290    1090   15367 INACTIVE       3,269,572       2,106,732 APPS         fion.li
+28225         67    1217   45091 INACTIVE       3,269,572       2,100,236 APPS         evayee
+31961        123    1218    9407 ACTIVE         3,269,572       1,951,262 APPS         hwl33
+9055         516    1312   10073 INACTIVE       3,269,572       2,106,732 APPS         tao.peng
+1329          41    1406      25 INACTIVE       3,269,572       1,707,190 APPS         oracle       emagent@applxp01.hwl
+                                                                                                    -ebis.com (TNS V1-V3
+                                                                                                    )
+
+20510        372     883   11869 INACTIVE       3,269,572       2,106,732 APPS         StevenLiang
+32096        201     559    7741 INACTIVE       3,269,572       2,484,502 APPS         hwl33        JDBC Thin Client
+4010         422     257    9587 INACTIVE       3,269,572       2,106,732 APPS         wangry
+3885         414    2404   12549 INACTIVE       3,252,516       1,981,284 APPS         MFN619362    dis51usr.exe
+32168        238    1558    5779 ACTIVE         3,204,036       2,451,398 APPS         hwl33        JDBC Thin Client
+30941        386    2397   15883 INACTIVE       3,204,036       2,073,996 APPS         mfn032641    dis51usr.exe
+6400         339     343   31111 INACTIVE       3,204,036       2,071,596 APPS         MFN626974    dis51usr.exe
+32100        203     792    6813 INACTIVE       3,204,036       1,820,230 APPS         hwl33
+27142        637    2295    2703 INACTIVE       3,204,036       2,200,676 APPS         shy
+12046         63     771     725 INACTIVE       3,204,036       2,062,692 APPS         MFN620605    dis51usr.exe
+1936         407    1653   11113 INACTIVE       3,138,500       2,137,108 APPS         MFN619362    dis51usr.exe
+28631        378    1557    4585 INACTIVE       3,138,500       2,066,964 APPS         MFN023352    dis51usr.exe
+20778        462    1530   15287 INACTIVE       3,138,500       2,066,964 APPS         MFN041846    dis51usr.exe
+28353        466    1969   11725 INACTIVE       3,138,500       2,071,596 APPS         MFN629610    dis51usr.exe
+31363        392      36   13791 INACTIVE       3,138,500       2,071,596 APPS         MFN323781    dis51usr.exe
+28546        485     996   16793 INACTIVE       3,138,500       2,066,964 APPS         MFN033370    dis51usr.exe
+1287         401     984    2997 INACTIVE       3,138,500       2,066,964 APPS         MFN063793    dis51usr.exe
+1422         404    1341    5545 INACTIVE       3,121,444       2,990,260 APPS         hwl33        JDBC Thin Client
+12451        409    1851   35971 INACTIVE       3,072,964       2,066,964 APPS         MFN039874    dis51usr.exe
+4450         410    1976    8485 INACTIVE       3,072,964       2,001,452 APPS         MFN076279    dis51usr.exe
+29293        553    2299   13009 INACTIVE       3,055,908       1,803,572 APPS         MFN020080    dis51usr.exe
+25560        377    1423    3037 INACTIVE       3,055,908       1,852,596 APPS         MFN042184    dis51usr.exe
+12108        446    2819    2525 INACTIVE       2,990,372       2,856,716 APPS         hwl33        JDBC Thin Client
+30739        476       8    4125 INACTIVE       2,990,372       1,854,436 APPS         MFN033370    dis51usr.exe
+28367        112      15   33385 INACTIVE       2,990,372       1,835,636 APPS         MFN629610    dis51usr.exe
+6702          52    2598   25753 INACTIVE       2,990,372       1,844,796 APPS         MFN626974    dis51usr.exe
+16838         51    2489     649 INACTIVE       2,990,372       2,604,740 APPS         hwl33
+16418        537     595    8889 INACTIVE       2,990,372       2,657,564 APPS         hwl33
+32098        202     687    6749 INACTIVE       2,941,892       2,528,670 APPS         hwl33
+32102        204     896    8369 INACTIVE       2,941,892       2,397,646 APPS         hwl33
+20499        619     362   16475 INACTIVE       2,941,892       2,774,652 APPS         hwl33        JDBC Thin Client
+27154        621     575   18901 INACTIVE       2,941,892       1,986,708 APPS         dis21        dis51ws@ebspdis1 (TN
+                                                                                                    S V1-V3)
+
+14355        286     658    3245 INACTIVE       2,924,836       1,854,420 APPS         MFN039874    dis51usr.exe
+29156         75    2088    8969 INACTIVE       2,876,356       2,128,212 APPS         hwl33        JDBC Thin Client
+4476         405    1413    3033 INACTIVE       2,859,300       1,854,420 APPS         MFN076279    dis51usr.exe
+5010         194    2853    5379 INACTIVE       2,810,820       2,182,110 APPS         hwl33        JDBC Thin Client
+7022         428     901   21771 INACTIVE       2,793,764       2,531,732 APPS         hwl33        JDBC Thin Client
+8950         430    1125   11181 INACTIVE       2,793,764       2,526,540 APPS         hwl33
+20459        435    1646   12293 INACTIVE       2,793,764       2,526,540 APPS         hwl33
+8232         498    2407    4997 INACTIVE       2,793,764       2,482,340 APPS         hwl33
+8171          49    2296   31833 INACTIVE       2,793,764       2,526,540 APPS         hwl33
+4416          54    2858   31807 INACTIVE       2,793,764       2,592,052 APPS         hwl33
+18008         45    1880    8971 INACTIVE       2,728,228       2,526,540 APPS         hwl33
+17100         64     870   14527 INACTIVE       2,728,228       2,416,828 APPS         hwl33
+19840        551    2058    9637 INACTIVE       2,679,748       2,458,596 APPS         hwl33        JDBC Thin Client
+17195         97    1411   42785 INACTIVE       2,662,692         759,528 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P000)
+
+17197         98    1524    6533 INACTIVE       2,662,692         759,528 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P001)
+
+25224         40    1298       1 ACTIVE         2,662,692       2,046,452              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (Q004)
+
+17205        155    1654   20183 INACTIVE       2,662,692         759,528 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P005)
+
+17203        153    1415   26615 INACTIVE       2,662,692         759,528 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P004)
+
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+22689        465    1845   19335 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+12048        444    2610    6041 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+7083         431    1210   24005 INACTIVE       2,614,212       2,063,180 APPS         MFN626963    dis51usr.exe
+19403        396     448   16731 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+22883        469    2310    4705 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+26581        630    1526   12623 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+21765        525    2287   23505 INACTIVE       2,614,212       2,521,588 APPS         hwl33        JDBC Thin Client
+27211        642    2841   13045 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+11808        529    2727   21681 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+29173         62     683   18709 INACTIVE       2,614,212       2,062,692 APPS         MFN020080    dis51usr.exe
+23687        611    2487    1017 ACTIVE         2,614,212       2,425,372 APPS         benl         sqlplus@dblxp03.hwl-
+                                                                                                    ebis.com (TNS V1-V3)
+
+32508        285     577   37221 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+3606         113     150    8859 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+25401        429     978    3049 INACTIVE       2,614,212       1,140,844 APPLSYSPUB   hwl33
+2863         564     439    2557 INACTIVE       2,614,212       2,458,652 APPS         hwl33        JDBC Thin Client
+17209        159    2085   53703 INACTIVE       2,597,156         759,528 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P007)
+
+17207        157    1859   11813 INACTIVE       2,597,156         759,528 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P006)
+
+19069        226     225    8379 INACTIVE       2,548,676       1,337,558 APPS         anna.chen
+3364         338     243   52013 INACTIVE       2,548,676       1,388,124 APPS         SIEW
+7405         436    1771   49561 INACTIVE       2,548,676       1,312,540 APPS         ShirleyK
+29282         95    1209    2875 INACTIVE       2,548,676       1,353,342 APPS         dick.chen
+21022        376    1330    7273 INACTIVE       2,548,676       1,315,788 APPS         dr95
+28231        316     867   13051 INACTIVE       2,548,676       1,485,516 APPS         evayee
+28364         36     879   13223 INACTIVE       2,548,676       1,312,540 APPS         JFN318862
+6660         513     992   17001 INACTIVE       2,548,676       1,315,788 APPS         Ann.Zhuo
+19071        541    1005    7429 INACTIVE       2,548,676       1,315,788 APPS         jessie.deng
+11319        597    1013   15011 INACTIVE       2,548,676       1,388,124 APPS         jevonc
+16332        535     369    8115 INACTIVE       2,548,676       1,315,788 APPS         JohnsonW
+24069        620     438   20229 INACTIVE       2,548,676       1,312,540 APPS         GillianF
+12848        369     567   31351 INACTIVE       2,548,676       1,315,788 APPS         fion.li
+3271         336      10   46383 INACTIVE       2,548,676       1,388,124 APPS         SIOWBING
+24609        560      33   26283 INACTIVE       2,548,676       1,312,540 APPS         irenelin
+3836         505     124   11135 INACTIVE       2,548,676       1,312,540 APPS         shierleyting
+30887        391    2958   13999 INACTIVE       2,548,676       1,391,372 APPS         jing.zhou
+20345        614    2816   11991 INACTIVE       2,548,676       1,388,124 APPS         yuwen        ADIQC32.EXE
+15476        362    2818   29459 INACTIVE       2,548,676       1,312,540 APPS         idac
+3910         502    2822    6215 INACTIVE       2,548,676       1,391,372 APPS         sx.chen
+10195        245    2279   23289 INACTIVE       2,548,676       1,312,540 APPS         IrisNG
+29111        638    2384    5413 INACTIVE       2,548,676       1,312,540 APPS         MFN606760
+22915        470    2422   18505 INACTIVE       2,548,676       1,315,788 APPS         jh.lu
+8311         360    2597    1383 INACTIVE       2,548,676       1,388,124 APPS         SIEWLI
+1464         500    2605   24447 INACTIVE       2,548,676       1,388,124 APPS         joannelo
+11295        528    2615    6873 INACTIVE       2,548,676       1,423,252 APPS         Daniel?Yao
+26296        633    1872   25749 INACTIVE       2,548,676       1,315,788 APPS         shy
+10676        270    1961    4843 INACTIVE       2,548,676       1,315,788 APPS         yz.xu
+27086        634    1973    6333 INACTIVE       2,548,676       1,315,788 APPS         ying.ou
+16416         47    2067   27127 INACTIVE       2,548,676       1,388,124 APPS         ChungC
+22701        468    2188   24211 INACTIVE       2,548,676       1,315,788 APPS         zm
+31331        491    1647   27073 INACTIVE       2,548,676       1,456,884 APPS         may.lei
+25081        256     445   21705 INACTIVE       2,531,620       1,472,980 APPS         lixiao
+2769         230     686   24001 INACTIVE       2,531,620       1,535,244 APPS         WaiCheng
+4012         423     367   26431 INACTIVE       2,531,620       1,439,348 APPS         wangry
+20513        373    1011   13313 INACTIVE       2,531,620       1,407,468 APPS         StevenLiang
+9246         517    1441   24291 INACTIVE       2,531,620       1,407,468 APPS         tao.peng
+13933        609    2294   23417 INACTIVE       2,483,140       1,245,964 SYSTEM                    OMS
+29150         76    2181   20909 INACTIVE       2,483,140       1,722,908 APPS         hwl33        JDBC Thin Client
+17219        246    2426    8621 INACTIVE       2,466,084         431,968 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P012)
+
+14233         66    1087   18433 INACTIVE       2,466,084       2,329,428 APPS         hwl33
+32300        293    1452    2371 INACTIVE       2,417,604       1,775,446 APPS         hwl33        JDBC Thin Client
+32046        179    1247    3889 INACTIVE       2,417,604       2,119,284 APPS         hwl33        JDBC Thin Client
+17215        240    1734    3635 INACTIVE       2,400,548         431,968 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P010)
+
+17211        163    2516   14005 INACTIVE       2,400,548         431,968 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P008)
+
+29184         88     441   61695 INACTIVE       2,352,068       1,722,908 APPS         hwl33        JDBC Thin Client
+17225        249    2736    6919 INACTIVE       2,335,012         431,968 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P015)
+
+27158         55    2937    1009 INACTIVE       2,335,012       2,146,164 APPS         hwl33
+27349        116     456   34087 INACTIVE       2,335,012       1,732,396 APPS         MFN038001    dis51usr.exe
+17221        247    2488   24809 INACTIVE       2,335,012         431,968 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P013)
+
+7606         335    2920     369 INACTIVE       2,286,532       1,937,750 APPS         hwl33        JDBC Thin Client
+24175        627    1208   27621 INACTIVE       2,286,532       1,336,292 APPS         SIOWBING
+29164         81    2733   20185 INACTIVE       2,286,532       1,937,750 APPS         hwl33        JDBC Thin Client
+17201        149    1009   60081 INACTIVE       2,269,476         366,456 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P003)
+
+17199        114     240   18619 INACTIVE       2,269,476         366,456 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P002)
+
+10703        252      19   20577 INACTIVE       2,269,476       2,067,380 APPS         hwl33
+13878         71    1644   44151 INACTIVE       2,269,476       2,067,380 APPS         hwl33
+17217        241    1884   14223 INACTIVE       2,269,476         431,968 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P011)
+
+19067        225     157   28485 INACTIVE       2,220,996       2,103,196 APPS         anna.chen
+6657         506     238    6039 INACTIVE       2,220,996       2,103,196 APPS         Ann.Zhuo
+10667        269    1846   42429 INACTIVE       2,220,996       2,103,196 APPS         yz.xu
+21020        374    1124   15731 INACTIVE       2,220,996       2,103,196 APPS         dr95
+29209         94    1126   13551 INACTIVE       2,220,996       1,845,676 APPS         hwl33        JDBC Thin Client
+29205         93     983    7873 INACTIVE       2,220,996       1,845,676 APPS         hwl33        JDBC Thin Client
+16414        536     463   33013 INACTIVE       2,220,996       2,099,948 APPS         ChungC
+24026        615    2965    9371 INACTIVE       2,220,996       2,099,948 APPS         GillianF
+3906         494    1987   10711 INACTIVE       2,220,996       2,103,196 APPS         sx.chen
+25057        109    2703    4469 INACTIVE       2,220,996       2,103,196 APPS         lixiao
+7400         434    1522   12817 INACTIVE       2,220,996       2,099,948 APPS         ShirleyK
+27083        623     809    6181 INACTIVE       2,220,996       2,103,196 APPS         ying.ou
+11306        595     762    6387 INACTIVE       2,220,996       2,099,948 APPS         jevonc
+28358        363    2921   53937 INACTIVE       2,220,996       2,099,948 APPS         JFN318862
+24125        420      49   18925 INACTIVE       2,203,940       2,067,380 APPS         hwl33
+23563         44    1752    8515 INACTIVE       2,203,940       2,067,380 APPS         hwl33
+20507         60     466    5485 INACTIVE       2,203,940       2,067,380 APPS         hwl33
+23555         70    1529   25385 INACTIVE       2,203,940       2,067,380 APPS         hwl33
+5532         589     117    1445 INACTIVE       2,155,460       1,074,748 DBSNMP                    OMS
+2327         313     571    3335 INACTIVE       2,155,460       1,924,340 APPS         hwl33        JDBC Thin Client
+
+OSpid     Orapid Sess id Serial# Status         PGA alloc        PGA used oracleuser   OS user      Program
+-------- ------- ------- ------- -------- --------------- --------------- ------------ ------------ --------------------
+32112        209    1439    8929 INACTIVE       2,089,924       1,922,460 APPS         hwl33        JDBC Thin Client
+7648         356    2210   14095 INACTIVE       2,089,924       1,853,644 APPS         hwl33        JDBC Thin Client
+7590         327    2056     677 INACTIVE       2,089,924       1,722,620 APPS         hwl33        JDBC Thin Client
+7652         357    2315    3055 INACTIVE       2,089,924       1,853,644 APPS         hwl33        JDBC Thin Client
+27205        543    1212   41655 ACTIVE         2,089,924         788,188              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (J000)
+
+7622         320    1334    9975 INACTIVE       2,089,924       1,722,620 APPS         hwl33        JDBC Thin Client
+5008         314     660    7477 INACTIVE       2,089,924       1,587,166 APPS         hwl33        JDBC Thin Client
+7616         340     440     233 INACTIVE       2,089,924       1,722,620 APPS         hwl33        JDBC Thin Client
+17213        164    2624   15509 INACTIVE       2,072,868         431,968 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P009)
+
+17223        248    2629   62649 INACTIVE       2,007,332         431,968 APPS         dis21        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (P014)
+
+30644        317     979   17541 INACTIVE       2,007,332       1,735,644 APPS         LIJIN        dis51usr.exe
+7689         351    1643   13491 INACTIVE       1,827,780         900,452 APPS         hwl33        JDBC Thin Client
+29168         84      28   12049 INACTIVE       1,827,780         900,452 APPS         hwl33        JDBC Thin Client
+29190         91     767    2861 INACTIVE       1,827,780         900,452 APPS         hwl33        JDBC Thin Client
+24198        628    1311   21827 INACTIVE       1,827,780         900,500 APPS         SIOWBING     C:\orant\BIN\RWDRILL
+                                                                                                    .EXE
+
+5001         300    2198    9081 INACTIVE       1,827,780         900,452 APPS         hwl33        JDBC Thin Client
+7693         364      52    4239 INACTIVE       1,827,780         900,452 APPS         hwl33        JDBC Thin Client
+29180         79    2513   10475 INACTIVE       1,827,780         900,452 APPS         hwl33        JDBC Thin Client
+7685         331    2529    5321 INACTIVE       1,827,780         900,452 APPS         hwl33        JDBC Thin Client
+27209        641    2724   10161 INACTIVE       1,762,244       1,206,796 APPLSYSPUB   hwl33           ?  @applxp02.hwl-
+                                                                                                    ebis.com (TNS V1-V3)
+
+24251          7     757       1 ACTIVE         1,565,636         976,516              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DBRM)
+
+24279         21    2269       1 ACTIVE         1,565,636       1,004,356              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (RECO)
+
+9498         231     798    8571 ACTIVE         1,417,508       1,121,204              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (W000)
+
+30118         92     907   22119 ACTIVE         1,417,508       1,121,204              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (W007)
+
+22679        308      21   31401 ACTIVE         1,369,028       1,055,692              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (W005)
+
+24283         23    2485       1 ACTIVE         1,369,028       1,202,516              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (MMNL)
+
+17582        449     149   40989 ACTIVE         1,351,972       1,009,812              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (W001)
+
+25758        456     900   11339 ACTIVE         1,351,972       1,055,836              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (W003)
+
+24239          2     217       1 ACTIVE         1,041,348         900,660              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (PMON)
+
+24322         29     109       1 ACTIVE           975,812         826,324              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (VKRM)
+
+24330         30     218       3 ACTIVE           975,812         830,716              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (QMNC)
+
+24241          3     325       1 ACTIVE           975,812         829,564              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (PSP0)
+
+24243          4     433       1 ACTIVE           975,812         826,324              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (VKTM)
+
+27207        639    2497    9735 ACTIVE           975,812         822,236              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (J001)
+
+24249          6     649       1 ACTIVE           975,812         826,300              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (DIAG)
+
+24255          9     973       1 ACTIVE           975,812         829,564              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (MMAN)
+
+16273         43    1622      17 ACTIVE           975,812         826,324              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (SMCO)
+
+24247          5     541       1 ACTIVE           975,812         833,588              hwl33        oracle@dblxp03.hwl-e
+                                                                                                    bis.com (GEN0)
+
+               1                                        0               0
+
+776 rows selected.
+
+SQL> 
+SQL> select *
+  2  from v$sga;
+
+NAME                      VALUE
+-------------------- ----------
+Fixed Size              2239112
+Variable Size        9932113272
+Database Buffers     4.3352E+10
+Redo Buffers          160727040
+
+SQL> 
+SQL> select a.COMPONENT,a.CURRENT_SIZE,a.MIN_SIZE,a.MAX_SIZE from V$MEMORY_DYNAMIC_COMPONENTS a;
+
+COMPONENT                                                        CURRENT_SIZE   MIN_SIZE   MAX_SIZE
+---------------------------------------------------------------- ------------ ---------- ----------
+shared pool                                                        8455716864 8455716864 8455716864
+large pool                                                          134217728          0  134217728
+java pool                                                           939524096  134217728  939524096
+streams pool                                                        402653184  402653184  402653184
+SGA Target                                                         5.3687E+10 5.3687E+10 5.3687E+10
+DEFAULT buffer cache                                               4.3352E+10 4.3352E+10 4.4158E+10
+KEEP buffer cache                                                           0          0          0
+RECYCLE buffer cache                                                        0          0          0
+DEFAULT 2K buffer cache                                                     0          0          0
+DEFAULT 4K buffer cache                                                     0          0          0
+DEFAULT 8K buffer cache                                                     0          0          0
+DEFAULT 16K buffer cache                                                    0          0          0
+DEFAULT 32K buffer cache                                                    0          0          0
+Shared IO Pool                                                              0          0          0
+PGA Target                                                         2.1475E+10 2.1475E+10 2.1475E+10
+ASM Buffer Cache                                                            0          0          0
+
+16 rows selected.
+
+SQL> 
+SQL> select a.name,a.DISPLAY_VALUE,a.ISDEFAULT from v$parameter a
+  2  where name like '%memory%'
+  3  or name like '%target%';
+
+NAME
+--------------------------------------------------------------------------------
+DISPLAY_VALUE
+------------------------------------------------------------------------------------------------------------------------
+ISDEFAULT
+---------
+shared_memory_address
+0
+TRUE
+
+hi_shared_memory_address
+0
+TRUE
+
+sga_target
+50G
+FALSE
+
+memory_target
+0
+TRUE
+
+memory_max_target
+0
+TRUE
+
+archive_lag_target
+0
+TRUE
+
+fast_start_io_target
+0
+TRUE
+
+fast_start_mttr_target
+0
+TRUE
+
+db_flashback_retention_target
+1440
+TRUE
+
+pga_aggregate_target
+20G
+FALSE
+
+parallel_servers_target
+448
+TRUE
+
+
+11 rows selected.
+
+SQL> 
+SQL> select a.name,a.DISPLAY_VALUE,a.ISDEFAULT from v$parameter a
+  2  where a.ISDEFAULT='FALSE';
+
+NAME
+--------------------------------------------------------------------------------
+DISPLAY_VALUE
+------------------------------------------------------------------------------------------------------------------------
+ISDEFAULT
+---------
+processes
+2000
+FALSE
+
+sessions
+3024
+FALSE
+
+cpu_count
+28
+FALSE
+
+lock_sga
+TRUE
+FALSE
+
+shared_pool_size
+8064M
+FALSE
+
+streams_pool_size
+384M
+FALSE
+
+_shared_pool_reserved_pct
+10
+FALSE
+
+nls_territory
+AMERICA
+FALSE
+
+nls_sort
+BINARY
+FALSE
+
+nls_date_format
+DD/MM/YYYY HH24:MI:SS
+FALSE
+
+nls_numeric_characters
+.,
+FALSE
+
+nls_comp
+BINARY
+FALSE
+
+nls_length_semantics
+BYTE
+FALSE
+
+filesystemio_options
+SETALL
+FALSE
+
+disk_asynch_io
+TRUE
+FALSE
+
+resource_manager_plan
+DEFAULT_PLAN
+FALSE
+
+sga_target
+50G
+FALSE
+
+control_files
+/PHWL33_db01/data/data10/cntrl01.dbf, /PHWL33_db01/data/data10/cntrl02.dbf, /PHWL33_db01/data/data10/cntrl03.dbf
+FALSE
+
+db_block_checksum
+TRUE
+FALSE
+
+db_block_size
+8192
+FALSE
+
+db_cache_size
+40G
+FALSE
+
+db_writer_processes
+8
+FALSE
+
+compatible
+11.2.0
+FALSE
+
+log_archive_dest
+/PHWL33_db01/dbdump/arch
+FALSE
+
+log_archive_format
+PHWL33_%s_%t_%r.dbf
+FALSE
+
+log_buffer
+52428800
+FALSE
+
+log_checkpoint_interval
+100000
+FALSE
+
+log_checkpoint_timeout
+72000
+FALSE
+
+db_files
+
+NAME
+--------------------------------------------------------------------------------
+DISPLAY_VALUE
+------------------------------------------------------------------------------------------------------------------------
+ISDEFAULT
+---------
+1024
+FALSE
+
+log_checkpoints_to_alert
+TRUE
+FALSE
+
+dml_locks
+10000
+FALSE
+
+undo_management
+AUTO
+FALSE
+
+undo_tablespace
+APPS_UNDOTS1
+FALSE
+
+undo_retention
+115200
+FALSE
+
+db_block_checking
+FALSE
+FALSE
+
+recyclebin
+OFF
+FALSE
+
+remote_os_roles
+FALSE
+FALSE
+
+sec_case_sensitive_logon
+FALSE
+FALSE
+
+O7_DICTIONARY_ACCESSIBILITY
+FALSE
+FALSE
+
+session_cached_cursors
+1000
+FALSE
+
+utl_file_dir
+/PHWL33_db01/dbdump/appl_tmp, /project/PHWL33/PHWL33ora/11.2.0/appsutil/outbound/PHWL33_phwl33db
+FALSE
+
+plsql_code_type
+native
+FALSE
+
+plsql_optimize_level
+2
+FALSE
+
+java_jit_enabled
+FALSE
+FALSE
+
+job_queue_processes
+10
+FALSE
+
+_system_trig_enabled
+TRUE
+FALSE
+
+cursor_sharing
+EXACT
+FALSE
+
+parallel_min_servers
+0
+FALSE
+
+parallel_max_servers
+16
+FALSE
+
+parallel_execution_message_size
+8192
+FALSE
+
+audit_file_dest
+/PHWL33_db01/dbdump/audit
+FALSE
+
+session_max_open_files
+100
+FALSE
+
+audit_trail
+DB
+FALSE
+
+db_name
+PHWL33
+FALSE
+
+open_cursors
+5000
+FALSE
+
+_sort_elimination_cost_ratio
+5
+FALSE
+
+_b_tree_bitmap_plans
+FALSE
+
+NAME
+--------------------------------------------------------------------------------
+DISPLAY_VALUE
+------------------------------------------------------------------------------------------------------------------------
+ISDEFAULT
+---------
+FALSE
+
+_fast_full_scan_enabled
+FALSE
+FALSE
+
+parallel_degree_policy
+manual
+FALSE
+
+_like_with_bind_as_equality
+TRUE
+FALSE
+
+pga_aggregate_target
+20G
+FALSE
+
+workarea_size_policy
+AUTO
+FALSE
+
+_optimizer_autostats_job
+FALSE
+FALSE
+
+optimizer_secure_view_merging
+FALSE
+FALSE
+
+parallel_degree_limit
+40
+FALSE
+
+aq_tm_processes
+1
+FALSE
+
+olap_page_pool_size
+4M
+FALSE
+
+diagnostic_dest
+/PHWL33_db01/dbdump/diag
+FALSE
+
+_trace_files_public
+TRUE
+FALSE
+
+max_dump_file_size
+20480
+FALSE
+
+
+70 rows selected.
+
+SQL> 
+SQL> select a.name,a.DISPLAY_VALUE,a.ISDEFAULT from v$parameter a
+  2  where a.name like '%area_size%';
+
+NAME
+--------------------------------------------------------------------------------
+DISPLAY_VALUE
+------------------------------------------------------------------------------------------------------------------------
+ISDEFAULT
+---------
+create_bitmap_area_size
+8388608
+TRUE
+
+bitmap_merge_area_size
+1048576
+TRUE
+
+hash_area_size
+131072
+TRUE
+
+sort_area_size
+65536
+TRUE
+
+workarea_size_policy
+AUTO
+FALSE
+
+
+SQL> 
+SQL> select
+  2  300*(2048576+a.value+b.value) pga_size
+  3  from
+  4  v$parameter a,
+  5  v$parameter b
+  6  where
+  7  a.name = 'sort_area_size'
+  8  and
+  9  b.name = 'hash_area_size';
+
+  PGA_SIZE
+----------
+ 673555200
+
+SQL> 
+SQL> select count(*) from v$session where username not in ('SYS');
+
+  COUNT(*)
+----------
+       735
+
+SQL> 
+SQL> SELECT sum(p.pga_alloc_mem),s.status
+  2  FROM
+  3  v$process p,v$session s
+  4  WHERE s.paddr ( + ) = p.addr
+  5  group by s.status;
+
+SUM(P.PGA_ALLOC_MEM) Status
+-------------------- --------
+                   0
+           575759856 ACTIVE
+          4029294988 INACTIVE
+
+SQL> 
+SQL> select substr(segment_type,1,5),sum(bytes)
+  2  from dba_segments a
+  3  where owner not in ('SYS')
+  4  and substr(segment_type,1,5) in ('TABLE','INDEX')
+  5  group by substr(segment_type,1,5);
+
+SUBSTR(SEGMENT_ SUM(BYTES)
+--------------- ----------
+TABLE           2.3922E+11
+INDEX           3.3230E+11
+
+SQL> 
+SQL> spool off;
